@@ -21,19 +21,19 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="indexing\columns.py">
+    <Compile Include="dataTableViewModel.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="indexing\rows.py">
+    <Compile Include="indexing.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="indexing\__init__.py">
+    <Compile Include="main_window.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tennis_Stats.py" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="indexing\" />
+    <Folder Include="GUI\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
