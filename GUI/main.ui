@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1728</width>
-    <height>972</height>
+    <width>960</width>
+    <height>549</height>
    </rect>
   </property>
-  <property name="maximumSize">
-   <size>
-    <width>3840</width>
-    <height>2160</height>
-   </size>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="mouseTracking">
    <bool>false</bool>
@@ -22,30 +22,89 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
+  </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QTableView" name="dataTableView">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>900</width>
-      <height>921</height>
-     </rect>
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <property name="spacing">
+     <number>8</number>
     </property>
-    <attribute name="horizontalHeaderMinimumSectionSize">
-     <number>30</number>
-    </attribute>
-    <attribute name="verticalHeaderMinimumSectionSize">
-     <number>20</number>
-    </attribute>
-   </widget>
+    <property name="leftMargin">
+     <number>10</number>
+    </property>
+    <property name="topMargin">
+     <number>10</number>
+    </property>
+    <property name="rightMargin">
+     <number>10</number>
+    </property>
+    <property name="bottomMargin">
+     <number>10</number>
+    </property>
+    <item>
+     <widget class="QTableView" name="dataTableView">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <attribute name="horizontalHeaderMinimumSectionSize">
+       <number>30</number>
+      </attribute>
+      <attribute name="verticalHeaderMinimumSectionSize">
+       <number>20</number>
+      </attribute>
+     </widget>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="buttonsLayout">
+      <property name="spacing">
+       <number>8</number>
+      </property>
+      <item alignment="Qt::AlignTop">
+       <widget class="QPushButton" name="addNewResultButton">
+        <property name="text">
+         <string>Add new result</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="statsLayout">
+      <property name="spacing">
+       <number>8</number>
+      </property>
+      <property name="leftMargin">
+       <number>6</number>
+      </property>
+      <property name="topMargin">
+       <number>6</number>
+      </property>
+      <property name="rightMargin">
+       <number>6</number>
+      </property>
+      <property name="bottomMargin">
+       <number>6</number>
+      </property>
+      <item>
+       <widget class="QTableView" name="h2hTableView"/>
+      </item>
+      <item>
+       <widget class="QTextEdit" name="debugText"/>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1728</width>
+     <width>960</width>
      <height>21</height>
     </rect>
    </property>
@@ -55,6 +114,7 @@
     </property>
     <addaction name="newXL"/>
     <addaction name="openXL"/>
+    <addaction name="saveXL"/>
     <addaction name="saveAsXL"/>
    </widget>
    <addaction name="fileMenu"/>
@@ -73,6 +133,11 @@
   <action name="saveAsXL">
    <property name="text">
     <string>Save as ...</string>
+   </property>
+  </action>
+  <action name="saveXL">
+   <property name="text">
+    <string>Save</string>
    </property>
   </action>
  </widget>

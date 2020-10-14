@@ -30,7 +30,7 @@ class indexing(object):
                 indexing.rezultat_xl = col
                 indexing.rezultat_py = col-1
 
-            if ws.cell(row=indexing.header_xl, column=col).value == 'Column8':
+            if ws.cell(row=indexing.header_xl, column=col).value == 'Column8' or 'Set1':
                 indexing.set1_xl = col
                 indexing.set1_py = col-1
 
@@ -66,7 +66,6 @@ class indexing(object):
 
     def rows(ws):
         for row in range(indexing.row_start_xl, ws.max_row+2):
-            print( ws.cell(row=row, column=indexing.col_start_xl).value)
             if ws.cell(row=row, column=indexing.col_start_xl).value == None:
                 indexing.row_end_xl = row
                 indexing.row_end_py = row-1

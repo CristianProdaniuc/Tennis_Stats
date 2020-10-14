@@ -24,10 +24,16 @@
     <Compile Include="dataTableViewModel.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="h2hTableViewModel.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="indexing.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="main_window.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="statistics.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tennis_Stats.py" />
