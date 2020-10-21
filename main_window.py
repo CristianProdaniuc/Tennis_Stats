@@ -8,6 +8,7 @@ from openpyxl import load_workbook, Workbook, styles, worksheet
 import numpy as np
 
 from indexing import indexing as index
+from index_init import index_init as indexes
 from dataTableViewModel import dataTableViewModel
 from h2hTableViewModel import h2hTableViewModel
 
@@ -63,12 +64,15 @@ class main(QMainWindow):
             print('Cancel was pressed or a non .xlsx file format was selected, please re-open the desired file\n')
 
     def fileNew(self):
-        self.header = np.array(['Data', 'Adversar', 'Rezultat', 'Set1', 'Set2', 'Set3', 'Set 4', 'Set 5', 'Set 6', 'Set 7', 'Set 8', 'Set 9', 'Tip', 'Round', 'Oras', 'Locatie', 'Suprafata', 'Rate', 'Observatii'], dtype='U64')
+        self.header = np.array(['Date', 'Opponent', 'Result', 'Set1', 'Set2', 'Set3', 'Set 4', 'Set 5', 'Set 6', 'Set 7', 'Set 8', 'Set 9', 'Type', 'Round', 'City', 'Venue', 'Surface', 'Rating', 'Observations'], dtype='U64')
         self.match_data = np.empty(shape=(1, self.header.size), dtype='U64')
-        self.h2h_header = np.array(['Score', '', 'Adversar'], dtype='U64')
+        self.h2h_header = np.array(['Won', '', 'Lost', '', 'Opponent'], dtype='U64')
         self.h2h_data = np.empty(shape=(1, self.h2h_header.size), dtype='U64')
 
-        self.dtVM = dataTableViewModel(self.match_data, self.header, self.h2h_data, self.h2h_header, self.window)
+        indexes.columns(self.header)
+        indexes.h2h_columns(self.h2h_header)
+
+        self.dtVM = dataTableViewModel(self.match_data, self.header, self.h2h_data, self.h2h_header, self.window, indexes)
         self.window.dataTableView.setModel(self.dtVM)        
 
     def fileSave(self):
@@ -115,7 +119,7 @@ class main(QMainWindow):
 
     def addNewResult(self):
         try: 
-            self.dtVM._data = np.vstack((self.dtVM._data, np.empty(shape=(1, index.col_end_xl-index.col_start_xl), dtype='U64')))
+            self.dtVM._data = np.vstack((self.dtVM._data, np.empty(shape=(1, indexes.obs +1), dtype='U64')))
             self.dtVM.layoutChanged.emit()
         except: 
             self.window.debugText.insertPlainText('You must create a new table or open an already existing one first!\n')

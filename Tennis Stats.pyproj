@@ -30,7 +30,13 @@
     <Compile Include="indexing.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="index_init.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="main_window.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="refresh.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="statistics.py">
