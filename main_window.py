@@ -7,7 +7,6 @@ from PyQt5.QtCore import QDir, Qt
 from openpyxl import load_workbook, Workbook, styles, worksheet
 import numpy as np
 
-from indexing import indexing as index
 from index_init import index_init as indexes
 from dataTableViewModel import dataTableViewModel
 from h2hTableViewModel import h2hTableViewModel
@@ -36,55 +35,58 @@ class main(QMainWindow):
             self.xlpalmares.active = 0
             ws_singles = self.xlpalmares.active
 
-            index.origin(ws_singles)
-            index.rows(ws_singles)
-            index.columns(ws_singles)        
+            #index.origin(ws_singles)
+            #index.rows(ws_singles)
+            #index.columns(ws_singles)  
 
-            self.match_data = np.empty(shape=(index.row_end_xl-index.row_start_xl, index.col_end_xl-index.col_start_xl), dtype='U64')
-            self.header = np.empty(shape=index.col_end_xl-index.col_start_xl, dtype='U64')
+            self.header = np.array(['Date', 'Opponent', 'Result', 'Set1', 'Set2', 'Set3', 'Set 4', 'Set 5', 'Set 6', 'Set 7', 'Set 8', 'Set 9', 'Type', 'Round', 'City', 'Venue', 'Surface', 'Rating', 'Observations'], dtype='U64')
+            self.h2h_header = np.array(['Won', '', 'Lost', '', 'Opponent'], dtype='U64')
 
-            for row in range(0, index.row_end_py - index.row_start_py):
-                for col in range(0, index.col_end_py - index.col_start_py):
-                    self.match_data[row][col] = ws_singles.cell(row = index.row_start_xl +row, column = index.col_start_xl +col).value
+            indexes.columns(self.header)
+            indexes.h2h_columns(self.h2h_header)
 
-            for col in range(0, index.col_end_py - index.col_start_py):
-                self.header[col] = ws_singles.cell(row=index.header_xl, column=index.col_start_xl +col).value
-
-            self.dtVM = dataTableViewModel(self.match_data, self.header)
-            self.window.dataTableView.setModel(self.dtVM)
+            self.data = np.empty(shape=(ws_singles.max_row -1, len(self.header)), dtype='U64')
+            for row in range(0, ws_singles.max_row -1):
+                for col in range(0, len(self.header)):
+                    if ws_singles.cell(row = row +2, column = col +1).value == None:
+                        self.data[row][col] = ''
+                    else:
+                        self.data[row][col] = ws_singles.cell(row = row +2, column = col +1).value
 
             ### parse the h2h statistics spreadsheet
             self.xlpalmares.active = 1
             ws_h2h = self.xlpalmares.active
 
-            self.h2h_data = np.empty(shape=(ws_h2h.max_row, 3), dtype='U64')
-            self.h2h_header = np.array(['Score', '', 'Adversar'], dtype='U64')
+            self.h2h_data = np.empty(shape=(ws_h2h.max_row -1, len(self.h2h_header)), dtype='U64')
+            for row in range(0, ws_h2h.max_row -1):
+                for col in range(0, len(self.h2h_header)):
+                    if ws_h2h.cell(row = row +2, column = col +1).value == None:
+                        self.h2h_data[row][col] = ''
+                    else:
+                        self.h2h_data[row][col] = ws_h2h.cell(row = row +2, column = col +1).value
+
+            self.dtVM = dataTableViewModel(self.data, self.header, self.h2h_data, self.h2h_header, self.window, indexes)
+            self.window.dataTableView.setModel(self.dtVM)
 
         else:
             print('Cancel was pressed or a non .xlsx file format was selected, please re-open the desired file\n')
 
     def fileNew(self):
         self.header = np.array(['Date', 'Opponent', 'Result', 'Set1', 'Set2', 'Set3', 'Set 4', 'Set 5', 'Set 6', 'Set 7', 'Set 8', 'Set 9', 'Type', 'Round', 'City', 'Venue', 'Surface', 'Rating', 'Observations'], dtype='U64')
-        self.match_data = np.empty(shape=(1, self.header.size), dtype='U64')
+        self.data = np.empty(shape=(1, self.header.size), dtype='U64')
         self.h2h_header = np.array(['Won', '', 'Lost', '', 'Opponent'], dtype='U64')
         self.h2h_data = np.empty(shape=(1, self.h2h_header.size), dtype='U64')
 
         indexes.columns(self.header)
         indexes.h2h_columns(self.h2h_header)
 
-        self.dtVM = dataTableViewModel(self.match_data, self.header, self.h2h_data, self.h2h_header, self.window, indexes)
+        self.dtVM = dataTableViewModel(self.data, self.header, self.h2h_data, self.h2h_header, self.window, indexes)
         self.window.dataTableView.setModel(self.dtVM)        
 
     def fileSave(self):
         try:
-            self.match_data = self.dtVM._data
-            self.header = self.dtVM._header
-        except:
-            self.window.debugText.insertPlainText('You must have a table open before saving!\n')
-
-    def fileSaveAs(self):
-        try:
-            self.match_data = self.dtVM._data
+            #if 'self.xlfile' in locals():
+            self.data = self.dtVM._data
             self.header = self.dtVM._header
             XLmodified = Workbook()
             ws_out = XLmodified.active
@@ -92,9 +94,47 @@ class main(QMainWindow):
             for col in range(0, self.header.size):
                 ws_out.cell(row=1, column=col+1).value = self.header[col]
 
-            for row in range(0, self.match_data.shape[0]):
-                for col in range(0, self.match_data.shape[1]):
-                    ws_out.cell(row=row+2, column=col+1).value = self.match_data[row][col]
+            for row in range(0, self.data.shape[0]):
+                for col in range(0, self.data.shape[1]):
+                    ws_out.cell(row=row+2, column=col+1).value = self.data[row][col]
+
+            XLmodified.create_sheet('h2h')
+            for ii in range(len(XLmodified.sheetnames)):
+                if XLmodified.sheetnames[ii] == 'h2h':
+                    break
+
+            XLmodified.active = ii
+            ws_out = XLmodified.active
+            self.h2h_data = self.dtVM.h2hVM._data
+            self.h2h_header = self.dtVM.h2hVM._header
+            for col in range(0, self.h2h_header.size):
+                ws_out.cell(row=1, column=col+1).value = self.h2h_header[col]
+
+            for row in range(0, self.h2h_data.shape[0]):
+                for col in range(0, self.h2h_data.shape[1]):
+                    ws_out.cell(row=row+2, column=col+1).value = self.h2h_data[row][col]
+
+            XLmodified.save(self.xlfile[0][:-5] + '.xlsx')
+            #else:
+            #    main.fileSaveAs
+            #    test=1
+        except:
+            main.fileSaveAs(self)
+            self.window.debugText.insertPlainText('You must have a file open before saving!\n')
+
+    def fileSaveAs(self):
+        try:
+            self.data = self.dtVM._data
+            self.header = self.dtVM._header
+            XLmodified = Workbook()
+            ws_out = XLmodified.active
+            ws_out.title = 'Results'
+            for col in range(0, self.header.size):
+                ws_out.cell(row=1, column=col+1).value = self.header[col]
+
+            for row in range(0, self.data.shape[0]):
+                for col in range(0, self.data.shape[1]):
+                    ws_out.cell(row=row+2, column=col+1).value = self.data[row][col]
 
             XLmodified.create_sheet('h2h')
             for ii in range(len(XLmodified.sheetnames)):
@@ -112,8 +152,8 @@ class main(QMainWindow):
                 for col in range(0, self.h2h_data.shape[1]):
                     ws_out.cell(row=row+2, column=col+1).value = self.h2h_data[row][col]
         
-            self_xlfile = QFileDialog.getSaveFileName(self)
-            XLmodified.save(self_xlfile[0] + '.xlsx')
+            self.xlfile = QFileDialog.getSaveFileName(self)
+            XLmodified.save(self.xlfile[0][:-5] + '.xlsx')
         except: 
             self.window.debugText.insertPlainText('You must have a table open before saving!\n')
 

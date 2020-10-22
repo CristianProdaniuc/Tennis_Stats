@@ -2,6 +2,7 @@ class index_init(object):
     """description of class"""
     def columns(header):
         for col in range(0, len(header)):
+            
             if header[col] == 'Date':
                 index_init.date = col 
 
