@@ -1,6 +1,6 @@
 import sys
 from PyQt5 import uic, QtCore, QtGui
-from PyQt5.QtWidgets import QMainWindow, QMenuBar, QMenu, QAction, QFileDialog, QTableView
+from PyQt5.QtWidgets import QMainWindow, QMenuBar, QMenu, QAction, QFileDialog, QTableView, QWidget
 from PyQt5.QtCore import QDir, Qt
 
 
@@ -35,12 +35,9 @@ class main(QMainWindow):
             self.xlpalmares.active = 0
             ws_singles = self.xlpalmares.active
 
-            #index.origin(ws_singles)
-            #index.rows(ws_singles)
-            #index.columns(ws_singles)  
-
             self.header = np.array(['Date', 'Opponent', 'Result', 'Set1', 'Set2', 'Set3', 'Set 4', 'Set 5', 'Set 6', 'Set 7', 'Set 8', 'Set 9', 'Type', 'Round', 'City', 'Venue', 'Surface', 'Rating', 'Observations'], dtype='U64')
             self.h2h_header = np.array(['Won', '', 'Lost', '', 'Opponent'], dtype='U64')
+            self.stats_header = np.array(['Overall', 'Clay'], dtype='U64') 
 
             indexes.columns(self.header)
             indexes.h2h_columns(self.h2h_header)
@@ -65,8 +62,18 @@ class main(QMainWindow):
                     else:
                         self.h2h_data[row][col] = ws_h2h.cell(row = row +2, column = col +1).value
 
-            self.dtVM = dataTableViewModel(self.data, self.header, self.h2h_data, self.h2h_header, self.window, indexes)
+            ### parse the stats spreadsheet
+            self.stats_data = np.empty(shape=(1, self.stats_header.size), dtype='U64') #placeholder
+
+            self.window.tabWidget.clear()
+
+
+               
+            self.dtVM = dataTableViewModel(self.data, self.header, self.h2h_data, self.h2h_header, self.stats_data, self.stats_header, self.window, indexes)
             self.window.dataTableView.setModel(self.dtVM)
+
+            
+
 
         else:
             print('Cancel was pressed or a non .xlsx file format was selected, please re-open the desired file\n')
@@ -77,15 +84,24 @@ class main(QMainWindow):
         self.h2h_header = np.array(['Won', '', 'Lost', '', 'Opponent'], dtype='U64')
         self.h2h_data = np.empty(shape=(1, self.h2h_header.size), dtype='U64')
 
+        self.stats_header = np.array(['Overall', 'Clay'], dtype='U64')
+        self.stats_years = np.array(['All Time'], dtype='U64')
+        self.stats_data = {}
+        self.stats_data[self.stats_years[0]] = np.empty(shape=(self.stats_header.size, 1), dtype='U64')
+
+        self.window.tabWidget.clear()
+        allTimeTab = QTableView()
+        self.window.tabWidget.addTab(allTimeTab, self.stats_years[0])
+
+
         indexes.columns(self.header)
         indexes.h2h_columns(self.h2h_header)
 
-        self.dtVM = dataTableViewModel(self.data, self.header, self.h2h_data, self.h2h_header, self.window, indexes)
+        self.dtVM = dataTableViewModel(self.data, self.header, self.h2h_data, self.h2h_header, self.stats_data, self.stats_header, self.stats_years, self.window, indexes)
         self.window.dataTableView.setModel(self.dtVM)        
 
     def fileSave(self):
         try:
-            #if 'self.xlfile' in locals():
             self.data = self.dtVM._data
             self.header = self.dtVM._header
             XLmodified = Workbook()
@@ -115,9 +131,6 @@ class main(QMainWindow):
                     ws_out.cell(row=row+2, column=col+1).value = self.h2h_data[row][col]
 
             XLmodified.save(self.xlfile[0][:-5] + '.xlsx')
-            #else:
-            #    main.fileSaveAs
-            #    test=1
         except:
             main.fileSaveAs(self)
             self.window.debugText.insertPlainText('You must have a file open before saving!\n')

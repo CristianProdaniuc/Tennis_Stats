@@ -42,6 +42,9 @@
     <Compile Include="statistics.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="statsTableViewModel.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Tennis_Stats.py" />
   </ItemGroup>
   <ItemGroup>
