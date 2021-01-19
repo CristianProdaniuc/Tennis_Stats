@@ -16,10 +16,10 @@ class refresh(object):
         h2h_index = model.createIndex(index_row, index.h2h_op)
         model.setData(h2h_index, model._data[index_row, index.h2h_op], role=Qt.EditRole)
 
-    def stats_tab_init(model, stats_header):
-        for ii in range(0, stats_header.size):
-            stats_index = model.createIndex(ii,0)
-            model.setData(stats_index, '0-0', role=Qt.EditRole)
+    #def stats_tab_init(model, stats_header):
+    #    for ii in range(0, stats_header.size):
+    #        stats_index = model.createIndex(ii,0)
+    #        model.setData(stats_index, '0-0', role=Qt.EditRole)
 
     def stats_tab(model, stats_header):
         for ii in range(0, stats_header.size):

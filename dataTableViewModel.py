@@ -60,6 +60,7 @@ class dataTableViewModel(QAbstractTableModel):
 
             if self._data[index.row(), index.column()] == value: # when cell value doesn't change
                 self._window.debugText.insertPlainText('Date cell value did not change. \n')
+
             elif (self._data[index.row(), index.column()] == None or self._data[index.row(), index.column()] == np.array([''])) and \
                     (value != None and value != np.array([''])): # when empty cell is edited with non-empty value
 
@@ -67,17 +68,18 @@ class dataTableViewModel(QAbstractTableModel):
                     test=1
                 else: # if year not in stats_years, add a new tab and initialize VM and update fields
                     self._stats_years = np.append(self._stats_years, value[-4:])
-                    self._stats_data[self._stats_years[-1]] = np.empty(shape=(self._stats_header.size, 1), dtype='U64')
+                    self._stats_data[self._stats_years[-1]] = np.array([['0-0'], ['0-0']], dtype='U64')
+
+                    temp_years = self._stats_years[1:]
+                    temp_years = np.sort(temp_years)
+                    pos = int(np.where(temp_years == value[-4:])[0][0])
 
                     newTab = QTableView()
-                    self._window.tabWidget.addTab(newTab, self._stats_years[-1])
+                    #self._window.tabWidget.addTab(newTab, self._stats_years[-1])
+                    self._window.tabWidget.insertTab(pos+1, newTab, temp_years[pos])
                     self.statsVM[self._stats_years[-1]] = statsTableViewModel(self._stats_data[self._stats_years[-1]], self._stats_header)
-                    print(self._stats_years.size)
-                    self._window.tabWidget.widget(self._stats_years.size-1).setModel(self.statsVM[self._stats_years[-1]]) #end VM initialization
-
-
-
-            print(value[-4:])     
+                    self._window.tabWidget.widget(pos+1).setModel(self.statsVM[self._stats_years[-1]]) #end VM initialization
+  
             test=1
 
     # ------------------------------------------------------ editing 'Opponent' cell -------------------------------------------------------------
@@ -166,14 +168,12 @@ class dataTableViewModel(QAbstractTableModel):
 
             ### stats table
             if st.sets_won != st.sets_won_new or st.sets_lost != st.sets_lost_new: # if sets won or lost changed
-                if self._stats_data['All Time'][0] == '':
-                    refresh.stats_tab_init(self.statsVM['All Time'], self._stats_header)
-                else:
-                    st.stats_compare_results(self._data, self._stats_data, self._stats_header, self._stats_years, self._index, index, self._window)
-                    for tab_name in self._stats_years:
-                        refresh.stats_tab(self.statsVM[tab_name], self._stats_header)
+                for year in self._stats_years:
+                    if year == 'All Time' or year == self._data[index.row(), self._index.date][-4:]:
+                        st.stats_compare_results(self._data, self._stats_data[year], self._stats_header, self._stats_years, self._index, index, self._window)
+                        refresh.stats_tab(self.statsVM[year], self._stats_header)
 
-    #------------------------------------------------ refresh tables after editing ----------------------------------------------------------------
+    #------------------------------------------------ refresh h2h tables after editing ----------------------------------------------------------------
         try: # in case h2h is 0-0 remove the opponent from h2h_table 
             if self.h2hVM._data[index_h2h_op, self._index.h2h_won][0] == '0' and self.h2hVM._data[index_h2h_op, self._index.h2h_lost][0] == '0':
                 self.h2hVM._data = np.delete(self.h2hVM._data, index_h2h_op, 0)

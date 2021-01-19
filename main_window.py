@@ -87,7 +87,8 @@ class main(QMainWindow):
         self.stats_header = np.array(['Overall', 'Clay'], dtype='U64')
         self.stats_years = np.array(['All Time'], dtype='U64')
         self.stats_data = {}
-        self.stats_data[self.stats_years[0]] = np.empty(shape=(self.stats_header.size, 1), dtype='U64')
+        #self.stats_data[self.stats_years[0]] = np.empty(shape=(self.stats_header.size, 1), dtype='U64')
+        self.stats_data[self.stats_years[0]] = np.array([['0-0'], ['0-0']], dtype='U64')
 
         self.window.tabWidget.clear()
         allTimeTab = QTableView()

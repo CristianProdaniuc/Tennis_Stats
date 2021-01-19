@@ -136,96 +136,87 @@ class statistics(object):
             if statistics.sets_lost_new > statistics.sets_won_new and statistics.sets_lost_new > 1: # still a loss
                 window.debugText.insertPlainText('No stats change \n')
             elif statistics.sets_lost_new < statistics.sets_won_new and statistics.sets_won_new > 1: # win
-                for ii in range(0, stats_data['All Time'].size):
+                for ii in range(0, stats_data.size):
                     if stats_header[ii] == 'Overall':
-                        index_line = np.char.find(stats_data[stats_years[0]][ii], '-')[0]
-                        W = int(stats_data[stats_years[0]][ii][0][0:index_line])
-                        L = int(stats_data[stats_years[0]][ii][0][index_line+1:])
-                        W = W +1
-                        L = L -1
-                        stats_data[stats_years[0]][ii][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+                        statistics.getWL(stats_data, ii)
+                        statistics.L2W(stats_data, statistics.W, statistics.L, ii)
                     elif stats_header[ii] == 'Clay' and data[index_table.row(), index.surf] == 'clay':
-                        index_line = np.char.find(stats_data[stats_years[0]][ii], '-')[0]
-                        W = int(stats_data[stats_years[0]][ii][0][0:index_line])
-                        L = int(stats_data[stats_years[0]][ii][0][index_line+1:])
-                        W = W +1
-                        L = L -1
-                        stats_data[stats_years[0]][ii][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+                        statistics.getWL(stats_data, ii)
+                        statistics.L2W(stats_data, statistics.W, statistics.L, ii)
             else: # NA
-                for ii in range(0, stats_data['All Time'].size):
+                for ii in range(0, stats_data.size):
                     if stats_header[ii] == 'Overall':
-                        index_line = np.char.find(stats_data[stats_years[0]][ii], '-')[0]
-                        W = int(stats_data[stats_years[0]][ii][0][0:index_line])
-                        L = int(stats_data[stats_years[0]][ii][0][index_line+1:])
-                        L = L -1
-                        stats_data[stats_years[0]][ii][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+                        statistics.getWL(stats_data, ii)
+                        statistics.L2NA(stats_data, statistics.W, statistics.L, ii)
                     elif stats_header[ii] == 'Clay' and data[index_table.row(), index.surf] == 'clay':
-                        index_line = np.char.find(stats_data[stats_years[0]][ii], '-')[0]
-                        W = int(stats_data[stats_years[0]][ii][0][0:index_line])
-                        L = int(stats_data[stats_years[0]][ii][0][index_line+1:])
-                        L = L -1
-                        stats_data[stats_years[0]][ii][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+                        statistics.getWL(stats_data, ii)
+                        statistics.L2NA(stats_data, statistics.W, statistics.L, ii)
         elif statistics.sets_lost < statistics.sets_won and statistics.sets_won > 1: # old win
             if statistics.sets_lost_new > statistics.sets_won_new and statistics.sets_lost_new > 1: # loss
-                for ii in range(0, stats_data['All Time'].size):
+                for ii in range(0, stats_data.size):
                     if stats_header[ii] == 'Overall':
-                        index_line = np.char.find(stats_data[stats_years[0]][ii], '-')[0]
-                        W = int(stats_data[stats_years[0]][ii][0][0:index_line])
-                        L = int(stats_data[stats_years[0]][ii][0][index_line+1:])
-                        W = W -1
-                        L = L +1
-                        stats_data[stats_years[0]][ii][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+                        statistics.getWL(stats_data, ii)
+                        statistics.W2L(stats_data, statistics.W, statistics.L, ii)
                     elif stats_header[ii] == 'Clay' and data[index_table.row(), index.surf] == 'clay':
-                        index_line = np.char.find(stats_data[stats_years[0]][ii], '-')[0]
-                        W = int(stats_data[stats_years[0]][ii][0][0:index_line])
-                        L = int(stats_data[stats_years[0]][ii][0][index_line+1:])
-                        W = W -1
-                        L = L +1
-                        stats_data[stats_years[0]][ii][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+                        statistics.getWL(stats_data, ii)
+                        statistics.W2L(stats_data, statistics.W, statistics.L, ii)
             elif statistics.sets_lost_new < statistics.sets_won_new and statistics.sets_won_new > 1: # win
                 window.debugText.insertPlainText('No stats change \n')
             else: # NA
-                for ii in range(0, stats_data['All Time'].size):
+                for ii in range(0, stats_data.size):
                     if stats_header[ii] == 'Overall':
-                        index_line = np.char.find(stats_data[stats_years[0]][ii], '-')[0]
-                        W = int(stats_data[stats_years[0]][ii][0][0:index_line])
-                        L = int(stats_data[stats_years[0]][ii][0][index_line+1:])
-                        W = W -1
-                        stats_data[stats_years[0]][ii][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+                        statistics.getWL(stats_data, ii)
+                        statistics.W2NA(stats_data, statistics.W, statistics.L, ii)
                     elif stats_header[ii] == 'Clay' and data[index_table.row(), index.surf] == 'clay':
-                        index_line = np.char.find(stats_data[stats_years[0]][ii], '-')[0]
-                        W = int(stats_data[stats_years[0]][ii][0][0:index_line])
-                        L = int(stats_data[stats_years[0]][ii][0][index_line+1:])
-                        W = W -1
-                        stats_data[stats_years[0]][ii][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+                        statistics.getWL(stats_data, ii)
+                        statistics.W2NA(stats_data, statistics.W, statistics.L, ii)
         else: # old NA 
             if statistics.sets_lost_new > statistics.sets_won_new and statistics.sets_lost_new > 1: # loss
-                for ii in range(0, stats_data['All Time'].size):
+                for ii in range(0, stats_data.size):
                     if stats_header[ii] == 'Overall':
-                        index_line = np.char.find(stats_data[stats_years[0]][ii], '-')[0]
-                        W = int(stats_data[stats_years[0]][ii][0][0:index_line])
-                        L = int(stats_data[stats_years[0]][ii][0][index_line+1:])
-                        L = L +1
-                        stats_data[stats_years[0]][ii][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+                        statistics.getWL(stats_data, ii)
+                        statistics.NA2L(stats_data, statistics.W, statistics.L, ii)
                     elif stats_header[ii] == 'Clay' and data[index_table.row(), index.surf] == 'clay':
-                        index_line = np.char.find(stats_data[stats_years[0]][ii], '-')[0]
-                        W = int(stats_data[stats_years[0]][ii][0][0:index_line])
-                        L = int(stats_data[stats_years[0]][ii][0][index_line+1:])
-                        L = L +1
-                        stats_data[stats_years[0]][ii][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+                        statistics.getWL(stats_data, ii)
+                        statistics.NA2L(stats_data, statistics.W, statistics.L, ii)
             elif statistics.sets_lost_new < statistics.sets_won_new and statistics.sets_won_new > 1: # win
-                for ii in range(0, stats_data['All Time'].size):
+                for ii in range(0, stats_data.size):
                     if stats_header[ii] == 'Overall':
-                        index_line = np.char.find(stats_data[stats_years[0]][ii], '-')[0]
-                        W = int(stats_data[stats_years[0]][ii][0][0:index_line])
-                        L = int(stats_data[stats_years[0]][ii][0][index_line+1:])
-                        W = W +1
-                        stats_data[stats_years[0]][ii][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+                        statistics.getWL(stats_data, ii)
+                        statistics.NA2W(stats_data, statistics.W, statistics.L, ii)
                     elif stats_header[ii] == 'Clay' and data[index_table.row(), index.surf] == 'clay':
-                        index_line = np.char.find(stats_data[stats_years[0]][ii], '-')[0]
-                        W = int(stats_data[stats_years[0]][ii][0][0:index_line])
-                        L = int(stats_data[stats_years[0]][ii][0][index_line+1:])
-                        W = W +1
-                        stats_data[stats_years[0]][ii][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+                        statistics.getWL(stats_data, ii)
+                        statistics.NA2W(stats_data, statistics.W, statistics.L, ii)
             else: # NA
                 window.debugText.insertPlainText('No stats change \n')
+
+    def getWL(stats_data, index):
+        index_line = np.char.find(stats_data[index], '-')[0]
+        statistics.W = int(stats_data[index][0][0:index_line])
+        statistics.L = int(stats_data[index][0][index_line+1:])
+
+    def NA2L(stats_data, W, L, index):
+        L = L +1
+        stats_data[index][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+
+    def NA2W(stats_data, W, L, index):
+        W = W +1
+        stats_data[index][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+
+    def W2L(stats_data, W, L, index):
+        W = W -1
+        L = L +1
+        stats_data[index][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+
+    def W2NA(stats_data, W, L, index):
+        W = W -1
+        stats_data[index][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+
+    def L2NA(stats_data, W, L, index):
+        L = L -1
+        stats_data[index][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
+
+    def L2W(stats_data, W, L, index):
+        W = W +1
+        L = L -1
+        stats_data[index][0] = np.array([str(W) + '-' + str(L)], dtype = 'U64')[0]
