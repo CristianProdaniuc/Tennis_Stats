@@ -49,40 +49,62 @@ class dataTableViewModel(QAbstractTableModel):
 
     def setData(self, index, value, role=Qt.EditRole): 
 
+    ##############################################################################################################################################
     # ------------------------------------------------------ editing 'Date' cell -----------------------------------------------------------------
+    ##############################################################################################################################################
         if index.column() == self._index.date: # when editing 'Date' cell
             try:
                 dt_value = dt.strptime(value, '%d.%m.%Y').date()
+                if self._data[index.row(), index.column()] == value: # when cell value doesn't change
+                    self._window.debugText.insertPlainText('Date cell value did not change. \n')
+                else:
+                    if self._data[index.row(), self._index.date] != '': # if last iteration of that year, remove the corresponding tab from stats table
+                        cnt_date = -1
+                        for date_row in range(0, self._data[:, self._index.date].size):
+                            if self._data[index.row(), self._index.date][-4:] == self._data[date_row, self._index.date][-4:]:
+                                cnt_date = cnt_date +1
+
+                        if cnt_date == 0:
+                            temp_years = self._stats_years[1:]
+                            temp_years = np.sort(temp_years)
+                            pos = int(np.where(temp_years == self._data[index.row(), self._index.date][-4:])[0][0]) 
+
+                            print(self._stats_years)
+                            self._stats_years = np.setdiff1d(self._stats_years, temp_years[pos], True)
+                            print(self._stats_years)
+                            self._window.tabWidget.removeTab(pos+1)
+                            self.statsVM.pop(self._data[index.row(), self._index.date][-4:])
+
+                    if (value[-4:] not in self._stats_years) and value != '': # if year not in stats_years, add a new tab and initialize VM and update fields
+                        self._stats_years = np.append(self._stats_years, value[-4:])
+                        self._stats_data[self._stats_years[-1]] = np.array([['0-0'], ['0-0'], ['0-0'], ['0-0']], dtype='U64')
+
+                        temp_years = self._stats_years[1:]
+                        temp_years = np.sort(temp_years)
+                        pos = int(np.where(temp_years == value[-4:])[0][0]) 
+
+                        newTab = QTableView()
+                        self._window.tabWidget.insertTab(pos+1, newTab, temp_years[pos])
+                        self.statsVM[self._stats_years[-1]] = statsTableViewModel(self._stats_data[self._stats_years[-1]], self._stats_header)
+                        self._window.tabWidget.widget(pos+1).setModel(self.statsVM[self._stats_years[-1]]) #end VM initialization
+
+                    st.stats_date_update(self._data, self._stats_data, self._stats_header, self._data[index.row(), self._index.date][-4:], value[-4:], self._index, index)
+                    refresh.stats_tab(self.statsVM[value[-4:]], self._stats_header)
+
+                         
             except:
-                value = ''
+                if value != '':
+                    value = self._data[index.row(), index.column()]
+                    self._window.debugText.insertPlainText('Invalid datetime format. Please input date using the dd.mm.yyyy format \n')
+                else:
+                    st.stats_date_update(self._data, self._stats_data, self._stats_header, self._data[index.row(), self._index.date][-4:], value[-4:], self._index, index)
+                    refresh.stats_tab(self.statsVM[value[-4:]], self._stats_header)
+
                 self._window.debugText.insertPlainText('Invalid datetime format. Please input date using the dd.mm.yyyy format \n')
 
-
-            if self._data[index.row(), index.column()] == value: # when cell value doesn't change
-                self._window.debugText.insertPlainText('Date cell value did not change. \n')
-
-            elif (self._data[index.row(), index.column()] == None or self._data[index.row(), index.column()] == np.array([''])) and \
-                    (value != None and value != np.array([''])): # when empty cell is edited with non-empty value
-
-                if value[-4:] in self._stats_years: # if year in stats_years, update fields of corresponding tab
-                    test=1
-                else: # if year not in stats_years, add a new tab and initialize VM and update fields
-                    self._stats_years = np.append(self._stats_years, value[-4:])
-                    self._stats_data[self._stats_years[-1]] = np.array([['0-0'], ['0-0']], dtype='U64')
-
-                    temp_years = self._stats_years[1:]
-                    temp_years = np.sort(temp_years)
-                    pos = int(np.where(temp_years == value[-4:])[0][0])
-
-                    newTab = QTableView()
-                    #self._window.tabWidget.addTab(newTab, self._stats_years[-1])
-                    self._window.tabWidget.insertTab(pos+1, newTab, temp_years[pos])
-                    self.statsVM[self._stats_years[-1]] = statsTableViewModel(self._stats_data[self._stats_years[-1]], self._stats_header)
-                    self._window.tabWidget.widget(pos+1).setModel(self.statsVM[self._stats_years[-1]]) #end VM initialization
-  
-            test=1
-
+    ##############################################################################################################################################
     # ------------------------------------------------------ editing 'Opponent' cell -------------------------------------------------------------
+    ##############################################################################################################################################
         elif index.column() == self._index.op: # when editing 'Opponent' cell
             if self._data[index.row(), index.column()] == value: # when cell value did not change
                 self._window.debugText.insertPlainText('Cell value remained the same.\n')
@@ -141,7 +163,9 @@ class dataTableViewModel(QAbstractTableModel):
                 st.h2h_result_remove(self._data,  self.h2hVM._data, index_h2h_op[0], self._index, index)
                 refresh.h2h_score(self.h2hVM, index_h2h_op[0], self._index)
 
+    ##############################################################################################################################################
     #--------------------------------------------------- editing 'SetN' cell ---------------------------------------------------------------------
+    ##############################################################################################################################################
         elif index.column() == self._index.set1 or index.column() == self._index.set2 or index.column() == self._index.set3:
             st.h2h_sets(self._data, self._index, index, self._window)
             self._data[index.row(), index.column()] = str(value)
@@ -173,11 +197,25 @@ class dataTableViewModel(QAbstractTableModel):
                         st.stats_compare_results(self._data, self._stats_data[year], self._stats_header, self._stats_years, self._index, index, self._window)
                         refresh.stats_tab(self.statsVM[year], self._stats_header)
 
+    #############################################################################################################################################################
+    #------------------------------------------------ editing 'Surface' cell ------------------------------------------------------------------------------------
+    #############################################################################################################################################################
+        elif index.column() == self._index.surf:
+            st.stats_surface_update(self._data, value, self._stats_data['All Time'], self._stats_header, self._stats_years, index, self._index, self._window)
+            refresh.stats_tab(self.statsVM['All Time'], self._stats_header)
+            try:
+                dt_value = dt.strptime(self._data[index.row(), self._index.date], '%d.%m.%Y').date()
+                st.stats_surface_update(self._data, value, self._stats_data[self._data[index.row(), self._index.date][-4:]], self._stats_header, self._stats_years, index, self._index, self._window)
+                refresh.stats_tab(self.statsVM[self._data[index.row(), self._index.date][-4:]], self._stats_header)
+            except:
+                test=1
+
     #------------------------------------------------ refresh h2h tables after editing ----------------------------------------------------------------
-        try: # in case h2h is 0-0 remove the opponent from h2h_table 
-            if self.h2hVM._data[index_h2h_op, self._index.h2h_won][0] == '0' and self.h2hVM._data[index_h2h_op, self._index.h2h_lost][0] == '0':
-                self.h2hVM._data = np.delete(self.h2hVM._data, index_h2h_op, 0)
-                self.h2hVM.layoutChanged.emit() 
+        try: # in case h2h is 0-0 and opponent not in data anymore, remove the opponent from h2h_table 
+            if self.h2hVM._data[index_h2h_op, self._index.h2h_op][0] not in self._data[:, self._index.op]:
+                if self.h2hVM._data[index_h2h_op, self._index.h2h_won][0] == '0' and self.h2hVM._data[index_h2h_op, self._index.h2h_lost][0] == '0':
+                    self.h2hVM._data = np.delete(self.h2hVM._data, index_h2h_op, 0)
+                    self.h2hVM.layoutChanged.emit() 
         except:
             test=2
             #self._window.debugText.insertPlainText('No opponent was removed from h2h table \n')

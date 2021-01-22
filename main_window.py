@@ -37,10 +37,11 @@ class main(QMainWindow):
 
             self.header = np.array(['Date', 'Opponent', 'Result', 'Set1', 'Set2', 'Set3', 'Set 4', 'Set 5', 'Set 6', 'Set 7', 'Set 8', 'Set 9', 'Type', 'Round', 'City', 'Venue', 'Surface', 'Rating', 'Observations'], dtype='U64')
             self.h2h_header = np.array(['Won', '', 'Lost', '', 'Opponent'], dtype='U64')
-            self.stats_header = np.array(['Overall', 'Clay'], dtype='U64') 
+            self.stats_header = np.array(['Overall', 'Clay', 'Hard', 'Tartan'], dtype='U64') 
 
             indexes.columns(self.header)
             indexes.h2h_columns(self.h2h_header)
+            indexes.stats_rows(self.stats_header)
 
             self.data = np.empty(shape=(ws_singles.max_row -1, len(self.header)), dtype='U64')
             for row in range(0, ws_singles.max_row -1):
@@ -63,17 +64,28 @@ class main(QMainWindow):
                         self.h2h_data[row][col] = ws_h2h.cell(row = row +2, column = col +1).value
 
             ### parse the stats spreadsheet
-            self.stats_data = np.empty(shape=(1, self.stats_header.size), dtype='U64') #placeholder
+            self.xlpalmares.active = 2
+            ws_stats = self.xlpalmares.active
 
-            self.window.tabWidget.clear()
+            self.stats_years = np.array([], dtype='U64')
+            for col in range(2, ws_stats.max_column+1):
+                self.stats_years = np.append(self.stats_years, ws_stats.cell(row=1, column=col).value)
 
+            self.stats_data = {}
+            cnt_col = 1
+            for col in self.stats_years:
+                cnt_col = cnt_col +1
+                self.stats_data[col] = np.array([['0-0'], ['0-0'], ['0-0'], ['0-0']], dtype='U64')
+                for row in range(2, ws_stats.max_row+1):
+                    self.stats_data[col][row-2][0] = ws_stats.cell(row=row, column=cnt_col).value
 
-               
-            self.dtVM = dataTableViewModel(self.data, self.header, self.h2h_data, self.h2h_header, self.stats_data, self.stats_header, self.window, indexes)
+            self.window.tabWidget.clear()     
+            for tab_name in self.stats_years:
+                newTab = QTableView()
+                self.window.tabWidget.addTab(newTab, tab_name)
+
+            self.dtVM = dataTableViewModel(self.data, self.header, self.h2h_data, self.h2h_header, self.stats_data, self.stats_header, self.stats_years, self.window, indexes)
             self.window.dataTableView.setModel(self.dtVM)
-
-            
-
 
         else:
             print('Cancel was pressed or a non .xlsx file format was selected, please re-open the desired file\n')
@@ -84,11 +96,10 @@ class main(QMainWindow):
         self.h2h_header = np.array(['Won', '', 'Lost', '', 'Opponent'], dtype='U64')
         self.h2h_data = np.empty(shape=(1, self.h2h_header.size), dtype='U64')
 
-        self.stats_header = np.array(['Overall', 'Clay'], dtype='U64')
+        self.stats_header = np.array(['Overall', 'Clay', 'Hard', 'Tartan'], dtype='U64')
         self.stats_years = np.array(['All Time'], dtype='U64')
         self.stats_data = {}
-        #self.stats_data[self.stats_years[0]] = np.empty(shape=(self.stats_header.size, 1), dtype='U64')
-        self.stats_data[self.stats_years[0]] = np.array([['0-0'], ['0-0']], dtype='U64')
+        self.stats_data[self.stats_years[0]] = np.array([['0-0'], ['0-0'], ['0-0'], ['0-0']], dtype='U64')
 
         self.window.tabWidget.clear()
         allTimeTab = QTableView()
@@ -97,12 +108,13 @@ class main(QMainWindow):
 
         indexes.columns(self.header)
         indexes.h2h_columns(self.h2h_header)
+        indexes.stats_rows(self.stats_header)
 
         self.dtVM = dataTableViewModel(self.data, self.header, self.h2h_data, self.h2h_header, self.stats_data, self.stats_header, self.stats_years, self.window, indexes)
         self.window.dataTableView.setModel(self.dtVM)        
 
     def fileSave(self):
-        try:
+        try: #data sheet
             self.data = self.dtVM._data
             self.header = self.dtVM._header
             XLmodified = Workbook()
@@ -114,7 +126,8 @@ class main(QMainWindow):
             for row in range(0, self.data.shape[0]):
                 for col in range(0, self.data.shape[1]):
                     ws_out.cell(row=row+2, column=col+1).value = self.data[row][col]
-
+            
+            # h2h sheet
             XLmodified.create_sheet('h2h')
             for ii in range(len(XLmodified.sheetnames)):
                 if XLmodified.sheetnames[ii] == 'h2h':
@@ -131,13 +144,39 @@ class main(QMainWindow):
                 for col in range(0, self.h2h_data.shape[1]):
                     ws_out.cell(row=row+2, column=col+1).value = self.h2h_data[row][col]
 
-            XLmodified.save(self.xlfile[0][:-5] + '.xlsx')
+            # stats sheet
+            XLmodified.create_sheet('stats')
+            for ii in range(len(XLmodified.sheetnames)):
+                if XLmodified.sheetnames[ii] == 'stats':
+                    break
+
+            XLmodified.active = ii
+            ws_out = XLmodified.active
+            self.stats_data = self.dtVM._stats_data
+            self.stats_header = self.dtVM._stats_header
+            self.stats_years = self.dtVM._stats_years
+            for ii in range(0, self.dtVM._stats_years.size):
+                self.stats_years[ii] = self.window.tabWidget.tabText(ii)
+
+            for col in range(0, self.stats_years.size):
+                ws_out.cell(row=1, column=col+2).value = self.stats_years[col]
+
+            for row in range(0, self.stats_header.size):
+                ws_out.cell(row=row+2, column=1).value = self.stats_header[row]
+
+            for col in range(0, self.stats_years.size):
+                for row in range(0, self.stats_header.size):
+                    print(self.stats_years[col])
+                    print(self.stats_data[self.stats_years[col]][row])
+                    ws_out.cell(row=row+2, column=col+2).value = self.stats_data[self.stats_years[col]][row][0]
+
+            XLmodified.save(self.xlfile[0] + '.xlsx')
         except:
             main.fileSaveAs(self)
             self.window.debugText.insertPlainText('You must have a file open before saving!\n')
 
     def fileSaveAs(self):
-        try:
+        try: # data tab
             self.data = self.dtVM._data
             self.header = self.dtVM._header
             XLmodified = Workbook()
@@ -150,6 +189,7 @@ class main(QMainWindow):
                 for col in range(0, self.data.shape[1]):
                     ws_out.cell(row=row+2, column=col+1).value = self.data[row][col]
 
+            # h2h sheet
             XLmodified.create_sheet('h2h')
             for ii in range(len(XLmodified.sheetnames)):
                 if XLmodified.sheetnames[ii] == 'h2h':
@@ -165,9 +205,33 @@ class main(QMainWindow):
             for row in range(0, self.h2h_data.shape[0]):
                 for col in range(0, self.h2h_data.shape[1]):
                     ws_out.cell(row=row+2, column=col+1).value = self.h2h_data[row][col]
-        
+            
+            # stats sheet
+            XLmodified.create_sheet('stats')
+            for ii in range(len(XLmodified.sheetnames)):
+                if XLmodified.sheetnames[ii] == 'stats':
+                    break
+
+            XLmodified.active = ii
+            ws_out = XLmodified.active
+            self.stats_data = self.dtVM._stats_data
+            self.stats_header = self.dtVM._stats_header
+            self.stats_years = self.dtVM._stats_years
+            for ii in range(0, self.dtVM._stats_years.size):
+                self.stats_years[ii] = self.window.tabWidget.tabText(ii)
+
+            for col in range(0, self.stats_years.size):
+                ws_out.cell(row=1, column=col+2).value = self.stats_years[col]
+
+            for row in range(0, self.stats_header.size):
+                ws_out.cell(row=row+2, column=1).value = self.stats_header[row]
+
+            for col in range(0, self.stats_years.size):
+                for row in range(0, self.stats_header.size):
+                    ws_out.cell(row=row+2, column=col+2).value = self.stats_data[self.stats_years[col]][row][0]
+                
             self.xlfile = QFileDialog.getSaveFileName(self)
-            XLmodified.save(self.xlfile[0][:-5] + '.xlsx')
+            XLmodified.save(self.xlfile[0] + '.xlsx')
         except: 
             self.window.debugText.insertPlainText('You must have a table open before saving!\n')
 

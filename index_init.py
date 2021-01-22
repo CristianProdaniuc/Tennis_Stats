@@ -52,3 +52,17 @@ class index_init(object):
 
             if header[col] == 'Opponent':
                 index_init.h2h_op = col 
+
+    def stats_rows(header):
+        for row in range(0, len(header)):
+            if header[row] == 'Overall':
+                index_init.st_overall = row
+
+            if header[row] == 'Clay':
+                index_init.st_clay = row
+
+            if header[row] == 'Hard':
+                index_init.st_hard = row
+
+            if header[row] == 'Tartan':
+                index_init.st_tartan = row
