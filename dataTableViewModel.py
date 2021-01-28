@@ -7,6 +7,7 @@ from h2hTableViewModel import h2hTableViewModel
 from statsTableViewModel import statsTableViewModel
 
 from statistics import statistics as st
+from tools import tools
 from refresh import refresh
 
 class dataTableViewModel(QAbstractTableModel):
@@ -52,6 +53,7 @@ class dataTableViewModel(QAbstractTableModel):
     ##############################################################################################################################################
     # ------------------------------------------------------ editing 'Date' cell -----------------------------------------------------------------
     ##############################################################################################################################################
+        self._window.debugText.clear()
         if index.column() == self._index.date: # when editing 'Date' cell
             try:
                 dt_value = dt.strptime(value, '%d.%m.%Y').date()
@@ -69,9 +71,7 @@ class dataTableViewModel(QAbstractTableModel):
                             temp_years = np.sort(temp_years)
                             pos = int(np.where(temp_years == self._data[index.row(), self._index.date][-4:])[0][0]) 
 
-                            print(self._stats_years)
                             self._stats_years = np.setdiff1d(self._stats_years, temp_years[pos], True)
-                            print(self._stats_years)
                             self._window.tabWidget.removeTab(pos+1)
                             self.statsVM.pop(self._data[index.row(), self._index.date][-4:])
 
@@ -93,7 +93,7 @@ class dataTableViewModel(QAbstractTableModel):
 
                          
             except:
-                if value != '':
+                if value != '' or (self._data[index.row(), index.column()] == '' and value == ''):
                     value = self._data[index.row(), index.column()]
                     self._window.debugText.insertPlainText('Invalid datetime format. Please input date using the dd.mm.yyyy format \n')
                 else:
@@ -117,6 +117,8 @@ class dataTableViewModel(QAbstractTableModel):
 
                 if index_h2h_op[0].size == 0:
                     st.h2h_result_first(self._data, self.h2hVM._data, index_h2h_op[0], self._index, index, value)
+                    self.h2hVM._data = tools.sort_h2h(self.h2hVM._data, self._index) # sort h2h table by name
+                    index_h2h_op = np.where(self.h2hVM._data[:, self._index.h2h_op] == value) # recalculate because index changed in previous line
                     refresh.h2h_score(self.h2hVM, self._h2h_data.shape[0]-1, self._index)
                     refresh.h2h_opponent(self.h2hVM, self._h2h_data.shape[0]-1, self._index)
 
@@ -140,6 +142,8 @@ class dataTableViewModel(QAbstractTableModel):
                     refresh.h2h_score(self.h2hVM, self._h2h_data.shape[0]-1, self._index)
 
                     st.h2h_result_first(self._data, self.h2hVM._data, index_h2h_op_new[0], self._index, index, value)
+                    self.h2hVM._data = tools.sort_h2h(self.h2hVM._data, self._index) # sort h2h table by name
+                    index_h2h_op = np.where(self.h2hVM._data[:, self._index.h2h_op] == self._data[index.row(), index.column()]) # recalculate because index changed in previous line
                     refresh.h2h_score(self.h2hVM, self._h2h_data.shape[0]-1, self._index)
                     refresh.h2h_opponent(self.h2hVM, self._h2h_data.shape[0]-1, self._index)
 
@@ -164,12 +168,21 @@ class dataTableViewModel(QAbstractTableModel):
                 refresh.h2h_score(self.h2hVM, index_h2h_op[0], self._index)
 
     ##############################################################################################################################################
+    #--------------------------------------------------- editing 'Result' cell ---------------------------------------------------------------------
+    ##############################################################################################################################################
+        elif index.column() == self._index.res: # when editing 'Result' cell
+            value = self._data[index.row(), index.column()] # makes it impossible to edit the 'Result' field (this field is generated automatically)
+            self._window.debugText.insertPlainText('Do not edit the \'Result\' field! \n')
+
+    ##############################################################################################################################################
     #--------------------------------------------------- editing 'SetN' cell ---------------------------------------------------------------------
     ##############################################################################################################################################
         elif index.column() == self._index.set1 or index.column() == self._index.set2 or index.column() == self._index.set3:
             st.h2h_sets(self._data, self._index, index, self._window)
             self._data[index.row(), index.column()] = str(value)
             st.h2h_sets_update(self._data, self._index, index, self._window)
+            if st.valid_input == False:
+                value = ''
 
             ### h2h table
             index_h2h_op = np.where(self.h2hVM._data[:, self._index.h2h_op] == self._data[index.row(), self._index.op])
@@ -211,16 +224,24 @@ class dataTableViewModel(QAbstractTableModel):
                 test=1
 
     #------------------------------------------------ refresh h2h tables after editing ----------------------------------------------------------------
+        self._data[index.row(), index.column()] = str(value)   
+
         try: # in case h2h is 0-0 and opponent not in data anymore, remove the opponent from h2h_table 
+            print(self.h2hVM._data[index_h2h_op, self._index.h2h_op], self._data[:, self._index.op])
             if self.h2hVM._data[index_h2h_op, self._index.h2h_op][0] not in self._data[:, self._index.op]:
-                if self.h2hVM._data[index_h2h_op, self._index.h2h_won][0] == '0' and self.h2hVM._data[index_h2h_op, self._index.h2h_lost][0] == '0':
+                if (self.h2hVM._data[index_h2h_op, self._index.h2h_won][0] == '0' and self.h2hVM._data[index_h2h_op, self._index.h2h_lost][0] == '0') or \
+                    (self.h2hVM._data[index_h2h_op, self._index.h2h_won][0] == '1' and self.h2hVM._data[index_h2h_op, self._index.h2h_lost][0] == '0') or \
+                    (self.h2hVM._data[index_h2h_op, self._index.h2h_won][0] == '0' and self.h2hVM._data[index_h2h_op, self._index.h2h_lost][0] == '1'):
                     self.h2hVM._data = np.delete(self.h2hVM._data, index_h2h_op, 0)
                     self.h2hVM.layoutChanged.emit() 
         except:
             test=2
-            #self._window.debugText.insertPlainText('No opponent was removed from h2h table \n')
 
-        self._data[index.row(), index.column()] = str(value)           
+
+        ### sorting data table by date
+        if '' not in self._data[:, self._index.date]:
+            self._data = tools.sort_date(self._data, self._index)
+
         self.dataChanged.emit(index, index, (Qt.DisplayRole, ))
 
         return True

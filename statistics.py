@@ -13,7 +13,6 @@ class statistics(object):
         for col in range(index.set1, index.set1 +3):
             lindex = data[index_data.row(), col].find('-')
             if lindex == -1 and col < index.set3:
-                window.debugText.insertPlainText('Invalid score or empty cell for sets 1 and/or 2. Please input the score in the following format: \'X-Y\'\n')
                 data[index_data.row(), index.res] = 'NA'
                 break
             elif lindex == -1 and col >= index.set3:
@@ -25,28 +24,42 @@ class statistics(object):
                 statistics.sets_won += 1
             elif int(data[index_data.row(), col][0:lindex]) < int(data[index_data.row(), col][lindex+1:]) and \
                     int(data[index_data.row(), col][lindex+1:]) > 5:
-                statistics.sets_lost += 1
+                statistics.sets_lost += 1               
 
     def h2h_sets_update(data, index, index_data, window):
         statistics.sets_won_new = 0
         statistics.sets_lost_new = 0
+        statistics.valid_input = True
 
         for col in range(index.set1, index.set1 +3):
             lindex = data[index_data.row(), col].find('-')
             if lindex == -1 and col < index.set3:
                 window.debugText.insertPlainText('Invalid score or empty cell for sets 1 and/or 2. Please input the score in the following format: \'X-Y\'\n')
-                data[index_data.row(), index.res] = 'NA'
+                if col == index_data.column():
+                    statistics.valid_input = False
+                    data[index_data.row(), index.res] = 'NA'
+
                 break
             elif lindex == -1 and col >= index.set3:
                 break
             elif data[index_data.row(), col][-2:] == 'ab':
                 statistics.sets_won_new = 10
+            elif data[index_data.row(), col][0:lindex].isdigit() != True or data[index_data.row(), col][lindex+1:].isdigit() != True:
+                window.debugText.insertPlainText('Invalid score - Please re-enter the score in the following format: \'X-Y\'\n')
+                statistics.valid_input = False
+                data[index_data.row(), index.res] = 'NA'
+                break
             elif int(data[index_data.row(), col][0:lindex]) > int(data[index_data.row(), col][lindex+1:]) and \
                   int(data[index_data.row(), col][0:lindex]) > 5:
                 statistics.sets_won_new += 1
             elif int(data[index_data.row(), col][0:lindex]) < int(data[index_data.row(), col][lindex+1:]) and \
                   int(data[index_data.row(), col][lindex+1:]) > 5:
                 statistics.sets_lost_new += 1
+            elif int(data[index_data.row(), col][0:lindex]) < 6 and int(data[index_data.row(), col][lindex+1:]) < 6:
+                window.debugText.insertPlainText('Invalid score, either the number of games lost or won must be at least 6. Input the score again. \n')
+                statistics.valid_input = False
+                data[index_data.row(), index.res] = 'NA'
+                break 
 
     def h2h_compare_results(data, h2h_data, index_op, index, index_data, window):  
 
@@ -74,8 +87,8 @@ class statistics(object):
             elif statistics.sets_lost_new < statistics.sets_won_new and statistics.sets_won_new > 1: # still a win
                 window.debugText.insertPlainText('Match outcome remains the same \n')
             else: # NA
-                h2h_data[index_op, index.h2h_win] = \
-                    np.array( [int(h2h_data[index_op, index.h2h_win]) -1], dtype='U64')[0]
+                h2h_data[index_op, index.h2h_won] = \
+                    np.array( [int(h2h_data[index_op, index.h2h_won]) -1], dtype='U64')[0]
                 data[index_data.row(), index.res] = 'NA'
 
         else: # old NA
@@ -162,7 +175,7 @@ class statistics(object):
         ### old tartan
         if data[index_data.row(), index.surf] == 'clay':
             if value == 'clay':
-                self._window.debugText.insertPlainText('Surface didn\'t change \n')
+                window.debugText.insertPlainText('Incorrect surface name. Only the following options are considered: clay, tartan, hard \n')
             elif value == 'hard':
                 if data[index_data.row(), index.res] == 'W':
                     statistics.getWL(stats_data, index.st_clay)
@@ -206,7 +219,7 @@ class statistics(object):
                     statistics.getWL(stats_data, index.st_clay)
                     statistics.NA2L(stats_data, statistics.W, statistics.L, index.st_clay)
             elif value == 'hard':
-                self._window.debugText.insertPlainText('Surface didn\'t change \n')
+                window.debugText.insertPlainText('Incorrect surface name. Only the following options are considered: clay, tartan, hard \n')
             elif value == 'tartan':
                 if data[index_data.row(), index.res] == 'W':
                     statistics.getWL(stats_data, index.st_hard)
@@ -250,7 +263,7 @@ class statistics(object):
                     statistics.getWL(stats_data, index.st_hard)
                     statistics.NA2L(stats_data, statistics.W, statistics.L, index.st_hard)
             elif value == 'tartan':
-                self._window.debugText.insertPlainText('Surface didn\'t change \n')    
+                window.debugText.insertPlainText('Incorrect surface name. Only the following options are considered: clay, tartan, hard \n')    
             else:
                 if data[index_data.row(), index.res] == 'W':
                     statistics.getWL(stats_data, index.st_tartan)
@@ -282,7 +295,7 @@ class statistics(object):
                     statistics.getWL(stats_data, index.st_tartan)
                     statistics.NA2L(stats_data, statistics.W, statistics.L, index.st_tartan)                   
             else:
-                self._window.debugText.insertPlainText('Surface didn\'t change \n')
+                window.debugText.insertPlainText('Incorrect surface name. Only the following options are considered: clay, tartan, hard \n')
         
 
     ##########################################################################################################################################

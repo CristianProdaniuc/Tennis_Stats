@@ -170,7 +170,11 @@ class main(QMainWindow):
                     print(self.stats_data[self.stats_years[col]][row])
                     ws_out.cell(row=row+2, column=col+2).value = self.stats_data[self.stats_years[col]][row][0]
 
-            XLmodified.save(self.xlfile[0] + '.xlsx')
+            if self.xlfile[0][-4:] == 'xlsx':
+                XLmodified.save(self.xlfile[0])
+            else:
+                XLmodified.save(self.xlfile[0] + '.xlsx')
+            
         except:
             main.fileSaveAs(self)
             self.window.debugText.insertPlainText('You must have a file open before saving!\n')
@@ -231,7 +235,11 @@ class main(QMainWindow):
                     ws_out.cell(row=row+2, column=col+2).value = self.stats_data[self.stats_years[col]][row][0]
                 
             self.xlfile = QFileDialog.getSaveFileName(self)
-            XLmodified.save(self.xlfile[0] + '.xlsx')
+            if self.xlfile[0][-4:] == 'xlsx':
+                XLmodified.save(self.xlfile[0])
+            else:
+                XLmodified.save(self.xlfile[0] + '.xlsx')
+        
         except: 
             self.window.debugText.insertPlainText('You must have a table open before saving!\n')
 
