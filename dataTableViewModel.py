@@ -77,7 +77,7 @@ class dataTableViewModel(QAbstractTableModel):
 
                     if (value[-4:] not in self._stats_years) and value != '': # if year not in stats_years, add a new tab and initialize VM and update fields
                         self._stats_years = np.append(self._stats_years, value[-4:])
-                        self._stats_data[self._stats_years[-1]] = np.array([['0-0'], ['0-0'], ['0-0'], ['0-0']], dtype='U64')
+                        self._stats_data[self._stats_years[-1]] = np.array([['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0']], dtype='U64')
 
                         temp_years = self._stats_years[1:]
                         temp_years = np.sort(temp_years)
@@ -174,9 +174,9 @@ class dataTableViewModel(QAbstractTableModel):
             value = self._data[index.row(), index.column()] # makes it impossible to edit the 'Result' field (this field is generated automatically)
             self._window.debugText.insertPlainText('Do not edit the \'Result\' field! \n')
 
-    ##############################################################################################################################################
-    #--------------------------------------------------- editing 'SetN' cell ---------------------------------------------------------------------
-    ##############################################################################################################################################
+    ###############################################################################################################################################
+    #--------------------------------------------------- editing 'SetN' cell ---------------------------------------------------------------------#
+    ###############################################################################################################################################
         elif index.column() == self._index.set1 or index.column() == self._index.set2 or index.column() == self._index.set3:
             st.h2h_sets(self._data, self._index, index, self._window)
             self._data[index.row(), index.column()] = str(value)
@@ -210,9 +210,38 @@ class dataTableViewModel(QAbstractTableModel):
                         st.stats_compare_results(self._data, self._stats_data[year], self._stats_header, self._stats_years, self._index, index, self._window)
                         refresh.stats_tab(self.statsVM[year], self._stats_header)
 
-    #############################################################################################################################################################
-    #------------------------------------------------ editing 'Surface' cell ------------------------------------------------------------------------------------
-    #############################################################################################################################################################
+    ###############################################################################################################################################
+    #--------------------------------------------------- editing 'Type' cell ---------------------------------------------------------------------#
+    ###############################################################################################################################################
+        elif index.column() == self._index.type:
+            if value != 'O' and value != 'F' and value != 'CB':
+                value = ''
+
+            st.stats_tournament_update(self._data, value, self._stats_data['All Time'], self._stats_header, self._stats_years, self._index, index, self._window)
+            refresh.stats_tab(self.statsVM['All Time'], self._stats_header)
+            try:
+                dt_value = dt.strptime(self._data[index.row(), self._index.date], '%d.%m.%Y').date()
+                st.stats_tournament_update(self._data, value, self._stats_data[self._data[index.row(), self._index.date][-4:]], self._stats_header, self._stats_years, self._index, index, self._window)
+                refresh.stats_tab(self.statsVM[self._data[index.row(), self._index.date][-4:]], self._stats_header)
+            except:
+                test=1
+
+    ################################################################################################################################################
+    #--------------------------------------------------- editing 'Round' cell ---------------------------------------------------------------------#
+    ################################################################################################################################################
+        elif index.column() == self._index.round:
+            st.stats_round_update(self._data, value, self._stats_data['All Time'], self._stats_header, self._stats_years, self._index, index, self._window)
+            refresh.stats_tab(self.statsVM['All Time'], self._stats_header)
+            try:
+                dt_value = dt.strptime(self._data[index.row(), self._index.date], '%d.%m.%Y').date()
+                st.stats_round_update(self._data, value, self._stats_data[self._data[index.row(), self._index.date][-4:]], self._stats_header, self._stats_years, self._index, index, self._window)
+                refresh.stats_tab(self.statsVM[self._data[index.row(), self._index.date][-4:]], self._stats_header)
+            except:
+                test=1
+
+    ##############################################################################################################################################################
+    #------------------------------------------------ editing 'Surface' cell ------------------------------------------------------------------------------------#
+    ##############################################################################################################################################################
         elif index.column() == self._index.surf:
             st.stats_surface_update(self._data, value, self._stats_data['All Time'], self._stats_header, self._stats_years, index, self._index, self._window)
             refresh.stats_tab(self.statsVM['All Time'], self._stats_header)

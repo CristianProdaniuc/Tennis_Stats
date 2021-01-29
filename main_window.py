@@ -36,8 +36,8 @@ class main(QMainWindow):
             ws_singles = self.xlpalmares.active
 
             self.header = np.array(['Date', 'Opponent', 'Result', 'Set1', 'Set2', 'Set3', 'Set 4', 'Set 5', 'Set 6', 'Set 7', 'Set 8', 'Set 9', 'Type', 'Round', 'City', 'Venue', 'Surface', 'Rating', 'Observations'], dtype='U64')
-            self.h2h_header = np.array(['Won', '', 'Lost', '', 'Opponent'], dtype='U64')
-            self.stats_header = np.array(['Overall', 'Clay', 'Hard', 'Tartan'], dtype='U64') 
+            self.h2h_header = np.array(['Opponent', 'Won', 'Lost', 'Nplayed'], dtype='U64')
+            self.stats_header = np.array(['Overall', 'Clay', 'Hard', 'Tartan', 'Tournament', 'Quarter-Final', 'Semi-Final', 'Final'], dtype='U64') 
 
             indexes.columns(self.header)
             indexes.h2h_columns(self.h2h_header)
@@ -75,7 +75,7 @@ class main(QMainWindow):
             cnt_col = 1
             for col in self.stats_years:
                 cnt_col = cnt_col +1
-                self.stats_data[col] = np.array([['0-0'], ['0-0'], ['0-0'], ['0-0']], dtype='U64')
+                self.stats_data[col] = np.array([['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0']], dtype='U64')
                 for row in range(2, ws_stats.max_row+1):
                     self.stats_data[col][row-2][0] = ws_stats.cell(row=row, column=cnt_col).value
 
@@ -93,13 +93,13 @@ class main(QMainWindow):
     def fileNew(self):
         self.header = np.array(['Date', 'Opponent', 'Result', 'Set1', 'Set2', 'Set3', 'Set 4', 'Set 5', 'Set 6', 'Set 7', 'Set 8', 'Set 9', 'Type', 'Round', 'City', 'Venue', 'Surface', 'Rating', 'Observations'], dtype='U64')
         self.data = np.empty(shape=(1, self.header.size), dtype='U64')
-        self.h2h_header = np.array(['Won', '', 'Lost', '', 'Opponent'], dtype='U64')
+        self.h2h_header = np.array(['Opponent', 'Won', 'Lost', 'Nplayed'], dtype='U64')
         self.h2h_data = np.empty(shape=(1, self.h2h_header.size), dtype='U64')
 
-        self.stats_header = np.array(['Overall', 'Clay', 'Hard', 'Tartan'], dtype='U64')
+        self.stats_header = np.array(['Overall', 'Clay', 'Hard', 'Tartan', 'Tournament', 'Quarter-Final', 'Semi-Final', 'Final'], dtype='U64')
         self.stats_years = np.array(['All Time'], dtype='U64')
         self.stats_data = {}
-        self.stats_data[self.stats_years[0]] = np.array([['0-0'], ['0-0'], ['0-0'], ['0-0']], dtype='U64')
+        self.stats_data[self.stats_years[0]] = np.array([['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0']], dtype='U64')
 
         self.window.tabWidget.clear()
         allTimeTab = QTableView()

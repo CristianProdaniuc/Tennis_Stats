@@ -159,6 +159,14 @@ class statistics(object):
                 statistics.WLupdate(stats_data, ii, index, index_data, window)
             elif stats_header[ii] == 'Tartan' and data[index_data.row(), index.surf] == 'tartan':
                 statistics.WLupdate(stats_data, ii, index, index_data, window)
+            elif stats_header[ii] == 'Tournament' and data[index_data.row(), index.type] == 'O':
+                statistics.WLupdate(stats_data, ii, index, index_data, window)
+            elif stats_header[ii] == 'Quarter-Final' and data[index_data.row(), index.round] == 'QF':
+                statistics.WLupdate(stats_data, ii, index, index_data, window)
+            elif stats_header[ii] == 'Semi-Final' and data[index_data.row(), index.round] == 'SF':
+                statistics.WLupdate(stats_data, ii, index, index_data, window)
+            elif stats_header[ii] == 'Final' and data[index_data.row(), index.round] == 'F':
+                statistics.WLupdate(stats_data, ii, index, index_data, window)
 
     def stats_date_update(data, stats_data, stats_header, old_year, new_year, index, index_data):
         for ii in range(0,stats_data['All Time'].size):
@@ -170,6 +178,164 @@ class statistics(object):
                 statistics.WLupdate_by_result(data, stats_data, old_year, new_year, ii, index, index_data)
             elif stats_header[ii] == 'Tartan' and data[index_data.row(), index.surf] == 'tartan':
                 statistics.WLupdate_by_result(data, stats_data, old_year, new_year, ii, index, index_data)
+            elif stats_header[ii] == 'Tournament' and data[index_data.row(), index.type] == 'O':
+                statistics.WLupdate_by_result(data, stats_data, old_year, new_year, ii, index, index_data)
+            elif stats_header[ii] == 'Quarter-Final' and data[index_data.row(), index.round] == 'QF':
+                statistics.WLupdate_by_result(data, stats_data, old_year, new_year, ii, index, index_data)
+            elif stats_header[ii] == 'Semi-Final' and data[index_data.row(), index.round] == 'SF':
+                statistics.WLupdate_by_result(data, stats_data, old_year, new_year, ii, index, index_data)
+            elif stats_header[ii] == 'Final' and data[index_data.row(), index.round] == 'F':
+                statistics.WLupdate_by_result(data, stats_data, old_year, new_year, ii, index, index_data)
+
+    def stats_tournament_update(data, value, stats_data, stats_header, stats_years, index, index_data, window):
+        ### old Oficial
+        if data[index_data.row(), index.type] == 'O':
+            if value == 'O':
+                window.debugText.insertPlainText('Match type did not change \n')
+            else:
+                if data[index_data.row(), index.res] == 'W':
+                    statistics.getWL(stats_data, index.st_tour)
+                    statistics.W2NA(stats_data, statistics.W, statistics.L, index.st_tour)
+                elif data[index_data.row(), index.res] == 'L':
+                    statistics.getWL(stats_data, index.st_tour)
+                    statistics.L2NA(stats_data, statistics.W, statistics.L, index.st_tour)
+        ### old Friendly
+        elif data[index_data.row(), index.type] != 'O':
+            if value == 'O':
+                if data[index_data.row(), index.res] == 'W':
+                    statistics.getWL(stats_data, index.st_tour)
+                    statistics.NA2W(stats_data, statistics.W, statistics.L, index.st_tour)
+                elif data[index_data.row(), index.res] == 'L':
+                    statistics.getWL(stats_data, index.st_tour)
+                    statistics.NA2L(stats_data, statistics.W, statistics.L, index.st_tour)
+            else:
+                window.debugText.insertPlainText('Match type did not change \n')
+
+    def stats_round_update(data, value, stats_data, stats_header, stats_years, index, index_data, window):
+        ### old QF
+        if data[index_data.row(), index.round] == 'QF':
+            if value == 'QF':
+                window.debugText.insertPlainText('Round value did not change.\n')
+            elif value == 'SF':
+                if data[index_data.row(), index.res] == 'W':
+                    statistics.getWL(stats_data, index.st_qf)
+                    statistics.W2NA(stats_data, statistics.W, statistics.L, index.st_qf)
+                    statistics.getWL(stats_data, index.st_sf)
+                    statistics.NA2W(stats_data, statistics.W, statistics.L, index.st_sf)
+                elif data[index_data.row(), index.res] == 'L':
+                    statistics.getWL(stats_data, index.st_qf)
+                    statistics.L2NA(stats_data, statistics.W, statistics.L, index.st_qf)
+                    statistics.getWL(stats_data, index.st_sf)
+                    statistics.NA2L(stats_data, statistics.W, statistics.L, index.st_sf)
+            elif value == 'F':
+                if data[index_data.row(), index.res] == 'W':
+                    statistics.getWL(stats_data, index.st_qf)
+                    statistics.W2NA(stats_data, statistics.W, statistics.L, index.st_qf)
+                    statistics.getWL(stats_data, index.st_f)
+                    statistics.NA2W(stats_data, statistics.W, statistics.L, index.st_f)
+                elif data[index_data.row(), index.res] == 'L':
+                    statistics.getWL(stats_data, index.st_qf)
+                    statistics.L2NA(stats_data, statistics.W, statistics.L, index.st_qf)
+                    statistics.getWL(stats_data, index.st_f)
+                    statistics.NA2L(stats_data, statistics.W, statistics.L, index.st_f)
+            else:
+                if data[index_data.row(), index.res] == 'W':
+                    statistics.getWL(stats_data, index.st_qf)
+                    statistics.W2NA(stats_data, statistics.W, statistics.L, index.st_qf)
+                elif data[index_data.row(), index.res] == 'L':
+                    statistics.getWL(stats_data, index.st_qf)
+                    statistics.L2NA(stats_data, statistics.W, statistics.L, index.st_qf)
+        ### old SF
+        elif data[index_data.row(), index.surf] == 'SF':
+            if value == 'QF':
+                if data[index_data.row(), index.res] == 'W':
+                    statistics.getWL(stats_data, index.st_sf)
+                    statistics.W2NA(stats_data, statistics.W, statistics.L, index.st_sf)
+                    statistics.getWL(stats_data, index.st_qf)
+                    statistics.NA2W(stats_data, statistics.W, statistics.L, index.st_qf)
+                elif data[index_data.row(), index.res] == 'L':
+                    statistics.getWL(stats_data, index.st_sf)
+                    statistics.L2NA(stats_data, statistics.W, statistics.L, index.st_sf)
+                    statistics.getWL(stats_data, index.st_qf)
+                    statistics.NA2L(stats_data, statistics.W, statistics.L, index.st_qf)
+            elif value == 'SF':
+                window.debugText.insertPlainText('Round value did not change.\n')
+            elif value == 'F':
+                if data[index_data.row(), index.res] == 'W':
+                    statistics.getWL(stats_data, index.st_sf)
+                    statistics.W2NA(stats_data, statistics.W, statistics.L, index.st_sf)
+                    statistics.getWL(stats_data, index.st_f)
+                    statistics.NA2W(stats_data, statistics.W, statistics.L, index.st_f)
+                elif data[index_data.row(), index.res] == 'L':
+                    statistics.getWL(stats_data, index.st_sf)
+                    statistics.L2NA(stats_data, statistics.W, statistics.L, index.st_sf)
+                    statistics.getWL(stats_data, index.st_f)
+                    statistics.NA2L(stats_data, statistics.W, statistics.L, index.st_f)
+            else:
+                if data[index_data.row(), index.res] == 'W':
+                    statistics.getWL(stats_data, index.st_sf)
+                    statistics.W2NA(stats_data, statistics.W, statistics.L, index.st_sf)
+                elif data[index_data.row(), index.res] == 'L':
+                    statistics.getWL(stats_data, index.st_sf)
+                    statistics.L2NA(stats_data, statistics.W, statistics.L, index.st_sf)
+        ### old_tartan
+        elif data[index_data.row(), index.surf] == 'F':
+            if value == 'QF':
+                if data[index_data.row(), index.res] == 'W':
+                    statistics.getWL(stats_data, index.st_f)
+                    statistics.W2NA(stats_data, statistics.W, statistics.L, index.st_f)
+                    statistics.getWL(stats_data, index.st_qf)
+                    statistics.NA2W(stats_data, statistics.W, statistics.L, index.st_qf)
+                elif data[index_data.row(), index.res] == 'L':
+                    statistics.getWL(stats_data, index.st_f)
+                    statistics.L2NA(stats_data, statistics.W, statistics.L, index.st_f)
+                    statistics.getWL(stats_data, index.st_sf)
+                    statistics.NA2L(stats_data, statistics.W, statistics.L, index.st_sf)
+            elif value == 'SF':
+                if data[index_data.row(), index.res] == 'W':
+                    statistics.getWL(stats_data, index.st_f)
+                    statistics.W2NA(stats_data, statistics.W, statistics.L, index.st_f)
+                    statistics.getWL(stats_data, index.st_sf)
+                    statistics.NA2W(stats_data, statistics.W, statistics.L, index.st_sf)
+                elif data[index_data.row(), index.res] == 'L':
+                    statistics.getWL(stats_data, index.st_f)
+                    statistics.L2NA(stats_data, statistics.W, statistics.L, index.st_f)
+                    statistics.getWL(stats_data, index.st_sf)
+                    statistics.NA2L(stats_data, statistics.W, statistics.L, index.st_sf)
+            elif value == 'F':
+                window.debugText.insertPlainText('Round value did not change.\n')  
+            else:
+                if data[index_data.row(), index.res] == 'W':
+                    statistics.getWL(stats_data, index.st_f)
+                    statistics.W2NA(stats_data, statistics.W, statistics.L, index.st_f)
+                elif data[index_data.row(), index.res] == 'L':
+                    statistics.getWL(stats_data, index.st_f)
+                    statistics.L2NA(stats_data, statistics.W, statistics.L, index.st_f)
+        ### old NA
+        else:
+            if value == 'QF':
+                if data[index_data.row(), index.res] == 'W':
+                    statistics.getWL(stats_data, index.st_qf)
+                    statistics.NA2W(stats_data, statistics.W, statistics.L, index.st_qf)
+                elif data[index_data.row(), index.res] == 'L':
+                    statistics.getWL(stats_data, index.st_qf)
+                    statistics.NA2L(stats_data, statistics.W, statistics.L, index.st_qf)
+            elif value == 'SF':
+                if data[index_data.row(), index.res] == 'W':
+                    statistics.getWL(stats_data, index.st_sf)
+                    statistics.NA2W(stats_data, statistics.W, statistics.L, index.st_sf)
+                elif data[index_data.row(), index.res] == 'L':
+                    statistics.getWL(stats_data, index.st_sf)
+                    statistics.NA2L(stats_data, statistics.W, statistics.L, index.st_sf)
+            elif value == 'F':
+                if data[index_data.row(), index.res] == 'W':
+                    statistics.getWL(stats_data, index.st_f)
+                    statistics.NA2W(stats_data, statistics.W, statistics.L, index.st_f)
+                elif data[index_data.row(), index.res] == 'L':
+                    statistics.getWL(stats_data, index.st_f)
+                    statistics.NA2L(stats_data, statistics.W, statistics.L, index.st_f)                   
+            else:
+                window.debugText.insertPlainText('Round value change not relevant for stats table.\n')            
 
     def stats_surface_update(data, value, stats_data, stats_header, stats_years, index_data, index, window):
         ### old tartan

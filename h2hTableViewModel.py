@@ -16,7 +16,7 @@ class h2hTableViewModel(QAbstractTableModel):
         return self._data.shape[0]
 
     def columnCount(self, index):
-        return self._data.shape[1]
+        return 3
 
     def flags(self, index):
         return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
@@ -27,7 +27,7 @@ class h2hTableViewModel(QAbstractTableModel):
         return True
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole and section < 3:
             header = self._header[section]
             return str(header)
         #if orientation == Qt.Vertical and role == Qt.DisplayRole:

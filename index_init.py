@@ -66,3 +66,15 @@ class index_init(object):
 
             if header[row] == 'Tartan':
                 index_init.st_tartan = row
+
+            if header[row] == 'Tournament':
+                index_init.st_tour = row
+
+            if header[row] == 'Quarter-Final':
+                index_init.st_qf = row
+
+            if header[row] == 'Semi-Final':
+                index_init.st_sf = row
+
+            if header[row] == 'Final':
+                index_init.st_f = row
