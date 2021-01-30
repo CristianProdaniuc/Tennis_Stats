@@ -88,19 +88,23 @@ class dataTableViewModel(QAbstractTableModel):
                         self.statsVM[self._stats_years[-1]] = statsTableViewModel(self._stats_data[self._stats_years[-1]], self._stats_header)
                         self._window.tabWidget.widget(pos+1).setModel(self.statsVM[self._stats_years[-1]]) #end VM initialization
 
-                    st.stats_date_update(self._data, self._stats_data, self._stats_header, self._data[index.row(), self._index.date][-4:], value[-4:], self._index, index)
-                    refresh.stats_tab(self.statsVM[value[-4:]], self._stats_header)
+                    if self._data[index.row(), self._index.date][-4:] == value[-4:]:
+                        st.stats_date_update(self._data, self._stats_data, self._stats_header, '', value[-4:], self._index, index)
+                        refresh.stats_tab(self.statsVM[value[-4:]], self._stats_header)
+                    else:
+                        st.stats_date_update(self._data, self._stats_data, self._stats_header, self._data[index.row(), self._index.date][-4:], value[-4:], self._index, index)
+                        refresh.stats_tab(self.statsVM[value[-4:]], self._stats_header)
 
                          
             except:
-                if value != '' or (self._data[index.row(), index.column()] == '' and value == ''):
-                    value = self._data[index.row(), index.column()]
-                    self._window.debugText.insertPlainText('Invalid datetime format. Please input date using the dd.mm.yyyy format \n')
-                else:
-                    st.stats_date_update(self._data, self._stats_data, self._stats_header, self._data[index.row(), self._index.date][-4:], value[-4:], self._index, index)
-                    refresh.stats_tab(self.statsVM[value[-4:]], self._stats_header)
-
+                #if value != '' or (self._data[index.row(), index.column()] == '' and value == '') or (self._data[index.row(), index.column()] != ''):
+                value = self._data[index.row(), index.column()]
                 self._window.debugText.insertPlainText('Invalid datetime format. Please input date using the dd.mm.yyyy format \n')
+                #else:
+                #    st.stats_date_update(self._data, self._stats_data, self._stats_header, self._data[index.row(), self._index.date][-4:], value[-4:], self._index, index)
+                #    refresh.stats_tab(self.statsVM[value[-4:]], self._stats_header)
+
+                #self._window.debugText.insertPlainText('Invalid datetime format. Please input date using the dd.mm.yyyy format \n')
 
     ##############################################################################################################################################
     # ------------------------------------------------------ editing 'Opponent' cell -------------------------------------------------------------
@@ -158,9 +162,9 @@ class dataTableViewModel(QAbstractTableModel):
                     refresh.h2h_score(self.h2hVM, index_h2h_op_new[0], self._index)
                     test=1
 
-            elif (self._data[index.row(), index.column()] != None or self._data[index.row(), index.column()] != np.array([''])) and \
-                 (value == None and value == np.array([''])): # when name in cell is deleted
-
+            #elif (self._data[index.row(), index.column()] != None or self._data[index.row(), index.column()] != '') and \
+            #     (value == None and value == ''): # when name in cell is deleted
+            else:
                 st.h2h_sets(self._data, self._index, index, self._window)
                 index_h2h_op = np.where(self.h2hVM._data[:, self._index.h2h_op] == self._data[index.row(), index.column()])
 

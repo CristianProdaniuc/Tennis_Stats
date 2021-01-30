@@ -246,7 +246,7 @@ class statistics(object):
                     statistics.getWL(stats_data, index.st_qf)
                     statistics.L2NA(stats_data, statistics.W, statistics.L, index.st_qf)
         ### old SF
-        elif data[index_data.row(), index.surf] == 'SF':
+        elif data[index_data.row(), index.round] == 'SF':
             if value == 'QF':
                 if data[index_data.row(), index.res] == 'W':
                     statistics.getWL(stats_data, index.st_sf)
@@ -279,7 +279,7 @@ class statistics(object):
                     statistics.getWL(stats_data, index.st_sf)
                     statistics.L2NA(stats_data, statistics.W, statistics.L, index.st_sf)
         ### old_tartan
-        elif data[index_data.row(), index.surf] == 'F':
+        elif data[index_data.row(), index.round] == 'F':
             if value == 'QF':
                 if data[index_data.row(), index.res] == 'W':
                     statistics.getWL(stats_data, index.st_f)
