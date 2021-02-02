@@ -31,7 +31,7 @@ class dataTableViewModel(QAbstractTableModel):
         self.tabCounter = 0
         for ii in self._stats_years:
             self.statsVM[ii] = statsTableViewModel(self._stats_data[ii], self._stats_header)
-            self._window.tabWidget.widget(self.tabCounter).setModel(self.statsVM[ii])
+            self._window.tabWidgetStats.widget(self.tabCounter).setModel(self.statsVM[ii])
             self.tabCounter = self.tabCounter +1
 
     def data(self, index, role):
@@ -77,7 +77,7 @@ class dataTableViewModel(QAbstractTableModel):
 
                     if (value[-4:] not in self._stats_years) and value != '': # if year not in stats_years, add a new tab and initialize VM and update fields
                         self._stats_years = np.append(self._stats_years, value[-4:])
-                        self._stats_data[self._stats_years[-1]] = np.array([['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0']], dtype='U64')
+                        self._stats_data[self._stats_years[-1]] = np.array([['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['-']], dtype='U64')
 
                         temp_years = self._stats_years[1:]
                         temp_years = np.sort(temp_years)

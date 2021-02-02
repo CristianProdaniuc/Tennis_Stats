@@ -5,12 +5,15 @@ class refresh(object):
     def h2h_score(model, index_row, index):
         h2h_indexW = model.createIndex(index_row, index.h2h_won)
         h2h_indexL = model.createIndex(index_row, index.h2h_lost)
+        h2h_indexM = model.createIndex(index_row, index.h2h_matches)
         if model._data[index_row, index.h2h_won] == '':
             model.setData(h2h_indexW, model._data[index_row, index.h2h_won], role=Qt.EditRole)
             model.setData(h2h_indexL, model._data[index_row, index.h2h_lost], role=Qt.EditRole)
+            model.setData(h2h_indexM, model._data[index_row, index.h2h_matches], role=Qt.EditRole)
         else:
             model.setData(h2h_indexW, model._data[index_row, index.h2h_won][0], role=Qt.EditRole)
             model.setData(h2h_indexL, model._data[index_row, index.h2h_lost][0], role=Qt.EditRole)
+            model.setData(h2h_indexM, model._data[index_row, index.h2h_matches][0], role=Qt.EditRole)
 
     def h2h_opponent(model, index_row, index):
         h2h_index = model.createIndex(index_row, index.h2h_op)

@@ -93,17 +93,17 @@ class main(QMainWindow):
     def fileNew(self):
         self.header = np.array(['Date', 'Opponent', 'Result', 'Set1', 'Set2', 'Set3', 'Set 4', 'Set 5', 'Set 6', 'Set 7', 'Set 8', 'Set 9', 'Type', 'Round', 'City', 'Venue', 'Surface', 'Rating', 'Observations'], dtype='U64')
         self.data = np.empty(shape=(1, self.header.size), dtype='U64')
-        self.h2h_header = np.array(['Opponent', 'Won', 'Lost', 'Nplayed'], dtype='U64')
+        self.h2h_header = np.array(['Opponent', 'Won', 'Lost', 'Matches'], dtype='U64')
         self.h2h_data = np.empty(shape=(1, self.h2h_header.size), dtype='U64')
 
-        self.stats_header = np.array(['Overall', 'Clay', 'Hard', 'Tartan', 'Tournament', 'Quarter-Final', 'Semi-Final', 'Final'], dtype='U64')
+        self.stats_header = np.array(['Overall', 'Clay', 'Hard', 'Tartan', 'Tournament', 'Quarter-Final', 'Semi-Final', 'Final', 'Most Matches'], dtype='U64')
         self.stats_years = np.array(['All Time'], dtype='U64')
         self.stats_data = {}
-        self.stats_data[self.stats_years[0]] = np.array([['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0']], dtype='U64')
+        self.stats_data[self.stats_years[0]] = np.array([['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['']], dtype='U64')
 
-        self.window.tabWidget.clear()
+        self.window.tabWidgetStats.clear()
         allTimeTab = QTableView()
-        self.window.tabWidget.addTab(allTimeTab, self.stats_years[0])
+        self.window.tabWidgetStats.addTab(allTimeTab, self.stats_years[0])
 
 
         indexes.columns(self.header)

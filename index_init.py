@@ -53,6 +53,9 @@ class index_init(object):
             if header[col] == 'Opponent':
                 index_init.h2h_op = col 
 
+            if header[col] == 'Matches':
+                index_init.h2h_matches = col 
+
     def stats_rows(header):
         for row in range(0, len(header)):
             if header[row] == 'Overall':

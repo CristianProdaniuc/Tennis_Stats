@@ -67,38 +67,34 @@ class statistics(object):
             if statistics.sets_lost_new > statistics.sets_won_new and statistics.sets_lost_new > 1: # still a loss
                 window.debugText.insertPlainText('Match outcome remains the same \n')
             elif statistics.sets_lost_new < statistics.sets_won_new and statistics.sets_won_new > 1: # win
-                h2h_data[index_op, index.h2h_won] = \
-                    np.array( [int(h2h_data[index_op, index.h2h_won]) +1], dtype='U64')[0]
-                h2h_data[index_op, index.h2h_lost] = \
-                    np.array( [int(h2h_data[index_op, index.h2h_lost]) -1], dtype='U64')[0]
+                h2h_data[index_op, index.h2h_won] = np.array( [int(h2h_data[index_op, index.h2h_won]) +1], dtype='U64')[0]
+                h2h_data[index_op, index.h2h_lost] = np.array( [int(h2h_data[index_op, index.h2h_lost]) -1], dtype='U64')[0]
                 data[index_data.row(), index.res] = 'W'
             else: # NA
-                h2h_data[index_op, index.h2h_lost] = \
-                    np.array( [int(h2h_data[index_op, index.h2h_lost]) -1], dtype='U64')[0]
+                h2h_data[index_op, index.h2h_lost] = np.array( [int(h2h_data[index_op, index.h2h_lost]) -1], dtype='U64')[0]
+                h2h_data[index_op, index.h2h_matches] = np.array( [int(h2h_data[index_op, index.h2h_matches]) -1], dtype='U64')[0]
                 data[index_data.row(), index.res] = 'NA'
 
         elif statistics.sets_lost < statistics.sets_won and statistics.sets_won > 1: # old win
             if statistics.sets_lost_new > statistics.sets_won_new and statistics.sets_lost_new > 1: # loss
-                h2h_data[index_op, index.h2h_won] = \
-                    np.array( [int(h2h_data[index_op, index.h2h_won]) -1], dtype='U64')[0]
-                h2h_data[index_op, index.h2h_lost] = \
-                    np.array( [int(h2h_data[index_op, index.h2h_lost]) +1], dtype='U64')[0]
+                h2h_data[index_op, index.h2h_won] = np.array( [int(h2h_data[index_op, index.h2h_won]) -1], dtype='U64')[0]
+                h2h_data[index_op, index.h2h_lost] = np.array( [int(h2h_data[index_op, index.h2h_lost]) +1], dtype='U64')[0]
                 data[index_data.row(), index.res] = 'L'
             elif statistics.sets_lost_new < statistics.sets_won_new and statistics.sets_won_new > 1: # still a win
                 window.debugText.insertPlainText('Match outcome remains the same \n')
             else: # NA
-                h2h_data[index_op, index.h2h_won] = \
-                    np.array( [int(h2h_data[index_op, index.h2h_won]) -1], dtype='U64')[0]
+                h2h_data[index_op, index.h2h_won] = np.array( [int(h2h_data[index_op, index.h2h_won]) -1], dtype='U64')[0]
+                h2h_data[index_op, index.h2h_matches] = np.array( [int(h2h_data[index_op, index.h2h_matches]) -1], dtype='U64')[0]
                 data[index_data.row(), index.res] = 'NA'
 
         else: # old NA
             if statistics.sets_lost_new > statistics.sets_won_new and statistics.sets_lost_new > 1: # loss
-                h2h_data[index_op, index.h2h_lost] = \
-                    np.array( [int(h2h_data[index_op, index.h2h_lost]) +1], dtype='U64')[0]
+                h2h_data[index_op, index.h2h_lost] = np.array( [int(h2h_data[index_op, index.h2h_lost]) +1], dtype='U64')[0]
+                h2h_data[index_op, index.h2h_matches] = np.array( [int(h2h_data[index_op, index.h2h_matches]) +1], dtype='U64')[0]
                 data[index_data.row(), index.res] = 'L'
             elif statistics.sets_lost_new < statistics.sets_won_new and statistics.sets_won_new > 1: # win
-                h2h_data[index_op, index.h2h_won] = \
-                    np.array( [int(h2h_data[index_op, index.h2h_won]) +1], dtype='U64')[0]
+                h2h_data[index_op, index.h2h_won] = np.array( [int(h2h_data[index_op, index.h2h_won]) +1], dtype='U64')[0]
+                h2h_data[index_op, index.h2h_matches] = np.array( [int(h2h_data[index_op, index.h2h_matches]) +1], dtype='U64')[0]
                 data[index_data.row(), index.res] = 'W'
             else: # still NA
                 window.debugText.insertPlainText('Match outcome remains the same \n')
@@ -108,37 +104,40 @@ class statistics(object):
             h2h_data[-1, index.h2h_op] = str(value)
             h2h_data[-1, index.h2h_won] = 1
             h2h_data[-1, index.h2h_lost] = 0
+            h2h_data[-1, index.h2h_matches] = 1
             data[index_data.row(), index.res] = 'W'
         elif statistics.sets_won < statistics.sets_lost and statistics.sets_lost > 1:
             h2h_data[-1, index.h2h_op] = str(value)
             h2h_data[-1, index.h2h_won] = 0
             h2h_data[-1, index.h2h_lost] = 1
+            h2h_data[-1, index.h2h_matches] = 1
             data[index_data.row(), index.res] = 'L'
         else:
             h2h_data[-1, index.h2h_op] = str(value)
             h2h_data[-1, index.h2h_won] = 0
             h2h_data[-1, index.h2h_lost] = 0
+            h2h_data[-1, index.h2h_matches] = 0
             data[index_data.row(), 2] = 'NA'
 
     def h2h_result_update(data, h2h_data, index_op, index, index_data):
         if statistics.sets_won > statistics.sets_lost and statistics.sets_won > 1:
-            h2h_data[index_op, index.h2h_won] = \
-                np.array( [int(h2h_data[index_op, index.h2h_won]) +1], dtype='U64')[0]
+            h2h_data[index_op, index.h2h_won] = np.array( [int(h2h_data[index_op, index.h2h_won]) +1], dtype='U64')[0]
+            h2h_data[index_op, index.h2h_matches] = np.array( [int(h2h_data[index_op, index.h2h_matches]) +1], dtype='U64')[0]
             data[index_data.row(), index.res] = 'W'
         elif statistics.sets_won < statistics.sets_lost and statistics.sets_lost > 1:
-            h2h_data[index_op, index.h2h_lost] = \
-                np.array( [int(h2h_data[index_op, index.h2h_lost]) +1], dtype='U64')[0]
+            h2h_data[index_op, index.h2h_lost] = np.array( [int(h2h_data[index_op, index.h2h_lost]) +1], dtype='U64')[0]
+            h2h_data[index_op, index.h2h_matches] = np.array( [int(h2h_data[index_op, index.h2h_matches]) +1], dtype='U64')[0]
             data[index_data.row(), index.res] = 'L'
         else:
             data[index_data.row(), 2] = 'NA'
 
     def h2h_result_remove(data, h2h_data, index_op, index, index_data):
         if statistics.sets_won > statistics.sets_lost and statistics.sets_won > 1:
-             h2h_data[index_op, index.h2h_won] = \
-                np.array( [int(h2h_data[index_op, index.h2h_won]) -1], dtype='U64')[0]
+             h2h_data[index_op, index.h2h_won] = np.array( [int(h2h_data[index_op, index.h2h_won]) -1], dtype='U64')[0]
+             h2h_data[index_op, index.h2h_matches] = np.array( [int(h2h_data[index_op, index.h2h_matches]) -1], dtype='U64')[0]
         elif statistics.sets_won < statistics.sets_lost and statistics.sets_lost > 1:
-            h2h_data[index_op, index.h2h_lost] = \
-                np.array( [int(h2h_data[index_op, index.h2h_lost]) -1], dtype='U64')[0]
+            h2h_data[index_op, index.h2h_lost] = np.array( [int(h2h_data[index_op, index.h2h_lost]) -1], dtype='U64')[0]
+            h2h_data[index_op, index.h2h_matches] = np.array( [int(h2h_data[index_op, index.h2h_matches]) -1], dtype='U64')[0]
 
     ###########################################################################################################################################
     #------------------------------------------ Stats Table Functions ------------------------------------------------------------------------#
