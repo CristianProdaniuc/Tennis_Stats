@@ -96,6 +96,9 @@ class main(QMainWindow):
         self.h2h_header = np.array(['Opponent', 'Won', 'Lost', 'Matches'], dtype='U64')
         self.h2h_data = np.empty(shape=(1, self.h2h_header.size), dtype='U64')
 
+        self.h2h_years = np.array(['All Time'], dtype='U64')
+        self.h2h_data_tabs = {}
+
         self.stats_header = np.array(['Overall', 'Clay', 'Hard', 'Tartan', 'Tournament', 'Quarter-Final', 'Semi-Final', 'Final', 'Most Matches'], dtype='U64')
         self.stats_years = np.array(['All Time'], dtype='U64')
         self.stats_data = {}
