@@ -98,6 +98,11 @@ class main(QMainWindow):
 
         self.h2h_years = np.array(['All Time'], dtype='U64')
         self.h2h_data_tabs = {}
+        self.h2h_data_tabs[self.h2h_years[0]] = np.array([['', '0', '0', '0']], dtype='U64') 
+
+        self.window.tabWidgetH2H.clear()
+        allTimeTab = QTableView()
+        self.window.tabWidgetH2H.addTab(allTimeTab, self.h2h_years[0])
 
         self.stats_header = np.array(['Overall', 'Clay', 'Hard', 'Tartan', 'Tournament', 'Quarter-Final', 'Semi-Final', 'Final', 'Most Matches'], dtype='U64')
         self.stats_years = np.array(['All Time'], dtype='U64')
@@ -108,12 +113,11 @@ class main(QMainWindow):
         allTimeTab = QTableView()
         self.window.tabWidgetStats.addTab(allTimeTab, self.stats_years[0])
 
-
         indexes.columns(self.header)
         indexes.h2h_columns(self.h2h_header)
         indexes.stats_rows(self.stats_header)
 
-        self.dtVM = dataTableViewModel(self.data, self.header, self.h2h_data, self.h2h_header, self.stats_data, self.stats_header, self.stats_years, self.window, indexes)
+        self.dtVM = dataTableViewModel(self.data, self.header, self.h2h_data, self.h2h_data_tabs, self.h2h_header, self.h2h_years, self.stats_data, self.stats_header, self.stats_years, self.window, indexes)
         self.window.dataTableView.setModel(self.dtVM)        
 
     def fileSave(self):

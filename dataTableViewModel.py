@@ -12,12 +12,14 @@ from refresh import refresh
 
 class dataTableViewModel(QAbstractTableModel):
     
-    def __init__(self, data, header, h2h_data, h2h_header, stats_data, stats_header, stats_years, window, indexes):
+    def __init__(self, data, header, h2h_data, h2h_data_tabs, h2h_header, h2h_years, stats_data, stats_header, stats_years, window, indexes):
         super(dataTableViewModel, self).__init__()
         self._data = data
         self._header = header
         self._h2h_data = h2h_data
+        self._h2h_data_tabs = h2h_data_tabs
         self._h2h_header = h2h_header
+        self._h2h_years = h2h_years
         self._stats_data = stats_data
         self._stats_header = stats_header
         self._stats_years = stats_years
@@ -27,11 +29,14 @@ class dataTableViewModel(QAbstractTableModel):
         self.h2hVM = h2hTableViewModel(self._h2h_data, self._h2h_header)     
         self._window.h2hTableView.setModel(self.h2hVM)
 
+        self.h2hVMtabs = {}
         self.statsVM = {}
         self.tabCounter = 0
         for ii in self._stats_years:
             self.statsVM[ii] = statsTableViewModel(self._stats_data[ii], self._stats_header)
             self._window.tabWidgetStats.widget(self.tabCounter).setModel(self.statsVM[ii])
+            self.h2hVMtabs[ii] = h2hTableViewModel(self._h2h_data_tabs[ii], self._h2h_header)
+            self._window.tabWidgetH2H.widget(self.tabCounter).setModel(self.h2hVMtabs[ii])
             self.tabCounter = self.tabCounter +1
 
     def data(self, index, role):
@@ -57,54 +62,116 @@ class dataTableViewModel(QAbstractTableModel):
         if index.column() == self._index.date: # when editing 'Date' cell
             try:
                 dt_value = dt.strptime(value, '%d.%m.%Y').date()
+                new_year = value[-4:]
+                try:
+                    old_year = self._data[index.row(), self._index.date][-4:]
+                except:
+                    old_year = ''
+
                 if self._data[index.row(), index.column()] == value: # when cell value doesn't change
                     self._window.debugText.insertPlainText('Date cell value did not change. \n')
                 else:
                     if self._data[index.row(), self._index.date] != '': # if last iteration of that year, remove the corresponding tab from stats table
                         cnt_date = -1
                         for date_row in range(0, self._data[:, self._index.date].size):
-                            if self._data[index.row(), self._index.date][-4:] == self._data[date_row, self._index.date][-4:]:
+                            if old_year == self._data[date_row, self._index.date][-4:]:
                                 cnt_date = cnt_date +1
 
                         if cnt_date == 0:
                             temp_years = self._stats_years[1:]
                             temp_years = np.sort(temp_years)
-                            pos = int(np.where(temp_years == self._data[index.row(), self._index.date][-4:])[0][0]) 
+                            pos = int(np.where(temp_years == old_year)[0][0]) 
+
+                            self._h2h_years = np.setdiff1d(self._h2h_years, temp_years[pos], True)
+                            self._window.tabWidgetH2H.removeTab(pos+1)
+                            self.h2hVMtabs.pop(old_year)
 
                             self._stats_years = np.setdiff1d(self._stats_years, temp_years[pos], True)
-                            self._window.tabWidget.removeTab(pos+1)
-                            self.statsVM.pop(self._data[index.row(), self._index.date][-4:])
+                            self._window.tabWidgetStats.removeTab(pos+1)
+                            self.statsVM.pop(old_year)
 
-                    if (value[-4:] not in self._stats_years) and value != '': # if year not in stats_years, add a new tab and initialize VM and update fields
-                        self._stats_years = np.append(self._stats_years, value[-4:])
+                    if (new_year not in self._stats_years) and value != '': # if year not in stats_years, add a new tab and initialize VM and update fields
+                        self._stats_years = np.append(self._stats_years, new_year)
                         self._stats_data[self._stats_years[-1]] = np.array([['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['0-0'], ['-']], dtype='U64')
+
+                        self._h2h_years = np.append(self._h2h_years, new_year)
+                        self._h2h_data_tabs[self._h2h_years[-1]] = np.array([['', '0', '0', '0']], dtype='U64') 
 
                         temp_years = self._stats_years[1:]
                         temp_years = np.sort(temp_years)
-                        pos = int(np.where(temp_years == value[-4:])[0][0]) 
+                        pos = int(np.where(temp_years == new_year)[0][0]) 
 
                         newTab = QTableView()
-                        self._window.tabWidget.insertTab(pos+1, newTab, temp_years[pos])
-                        self.statsVM[self._stats_years[-1]] = statsTableViewModel(self._stats_data[self._stats_years[-1]], self._stats_header)
-                        self._window.tabWidget.widget(pos+1).setModel(self.statsVM[self._stats_years[-1]]) #end VM initialization
+                        self._window.tabWidgetH2H.insertTab(pos+1, newTab, temp_years[pos])
+                        self.h2hVMtabs[self._h2h_years[-1]] = h2hTableViewModel(self._h2h_data_tabs[self._h2h_years[-1]], self._h2h_header)
+                        self._window.tabWidgetH2H.widget(pos+1).setModel(self.h2hVMtabs[self._h2h_years[-1]])
 
+                        newTab = QTableView()
+                        self._window.tabWidgetStats.insertTab(pos+1, newTab, temp_years[pos])
+                        self.statsVM[self._stats_years[-1]] = statsTableViewModel(self._stats_data[self._stats_years[-1]], self._stats_header)
+                        self._window.tabWidgetStats.widget(pos+1).setModel(self.statsVM[self._stats_years[-1]]) #end VM initialization
+                
+                    ### updating h2h table
+                    index_h2h_op_ny = np.where(self.h2hVMtabs[new_year]._data[:, self._index.h2h_op] == self._data[index.row(), self._index.op])
+                    if old_year == '':
+                        if index_h2h_op_ny[0].size == 0:
+                            st.h2h_date_update_new_op(self._data, self.h2hVMtabs[new_year]._data, index_h2h_op_ny[0], self._index, index, value)
+                            self.h2hVMtabs[new_year]._data = tools.sort_h2h(self.h2hVMtabs[new_year]._data, self._index)
+                            index_h2h_op_ny = np.where(self.h2hVMtabs[new_year]._data[:, self._index.h2h_op] == self._data[index.row(), self._index.op])
+
+                            self.h2hVMtabs[new_year]._data = np.vstack((self.h2hVMtabs[new_year]._data, np.empty(shape=(1, self._h2h_data_tabs['All Time'].shape[1]), dtype='U64')))
+                            self.h2hVMtabs[new_year].layoutChanged.emit() 
+                        else:
+                            st.h2h_date_update_existing_op(self._data, self.h2hVMtabs, '', new_year, '', index_h2h_op_ny[0], self._index, index, value)
+                            refresh.h2h_score(self.h2hVMtabs[new_year], index_h2h_op_ny[0], self._index)
+                    else:
+                        if cnt_date == 0 and index_h2h_op_ny[0].size == 0:
+                            st.h2h_date_update_new_op(self._data, self.h2hVMtabs[new_year]._data, index_h2h_op_ny[0], self._index, index, value)
+                            self.h2hVMtabs[new_year]._data = tools.sort_h2h(self.h2hVMtabs[new_year]._data, self._index)
+                            index_h2h_op_ny = np.where(self.h2hVMtabs[new_year]._data[:, self._index.h2h_op] == self._data[index.row(), self._index.op])
+
+                            self.h2hVMtabs[new_year]._data = np.vstack((self.h2hVMtabs[new_year]._data, np.empty(shape=(1, self._h2h_data_tabs['All Time'].shape[1]), dtype='U64')))
+                            self.h2hVMtabs[new_year].layoutChanged.emit() 
+                        elif cnt_date == 0 and index_h2h_op_ny[0].size != 0:
+                            st.h2h_date_update_existing_op(self._data, self.h2hVMtabs, '', new_year, '', index_h2h_op_ny[0], self._index, index, value)
+                            refresh.h2h_score(self.h2hVMtabs[new_year], index_h2h_op_ny[0], self._index)
+                        elif cnt_date != 0 and index_h2h_op_ny[0].size == 0:
+                            st.h2h_date_update_new_op(self._data, self.h2hVMtabs[new_year]._data, index_h2h_op_ny[0], self._index, index, value)
+                            self.h2hVMtabs[new_year]._data = tools.sort_h2h(self.h2hVMtabs[new_year]._data, self._index)
+                            index_h2h_op_ny = np.where(self.h2hVMtabs[new_year]._data[:, self._index.h2h_op] == self._data[index.row(), self._index.op])
+
+                            self.h2hVMtabs[new_year]._data = np.vstack((self.h2hVMtabs[new_year]._data, np.empty(shape=(1, self._h2h_data_tabs['All Time'].shape[1]), dtype='U64')))
+                            self.h2hVMtabs[new_year].layoutChanged.emit() 
+                            index_h2h_op_oy = np.where(self.h2hVMtabs[old_year]._data[:, self._index.h2h_op] == self._data[index.row(), self._index.op])
+                            if int(self.h2hVMtabs[old_year]._data[index_h2h_op_oy, self._index.h2h_matches]) < 2:
+                                self.h2hVMtabs[old_year]._data = np.delete(self.h2hVMtabs[old_year]._data, index_h2h_op_oy[0], 0)
+                                self.h2hVMtabs[old_year].layoutChanged.emit() 
+                            else:
+                                st.h2h_date_update_existing_op(self._data, self.h2hVMtabs, old_year, '', index_h2h_op_oy[0], '', self._index, index, value)
+                                refresh.h2h_score(self.h2hVMtabs[old_year], index_h2h_op_oy[0], self._index)
+                        else:
+                            index_h2h_op_oy = np.where(self.h2hVMtabs[old_year]._data[:, self._index.h2h_op] == self._data[index.row(), self._index.op])
+                            if int(self.h2hVMtabs[old_year]._data[index_h2h_op_oy, self._index.h2h_matches]) < 2:
+                                self.h2hVMtabs[old_year]._data = np.delete(self.h2hVMtabs[old_year]._data, index_h2h_op_oy[0], 0)
+                                self.h2hVMtabs[old_year].layoutChanged.emit() 
+                                st.h2h_date_update_existing_op(self._data, self.h2hVMtabs, '', new_year, '', index_h2h_op_ny[0], self._index, index, value)
+                                refresh.h2h_score(self.h2hVMtabs[new_year], index_h2h_op_ny[0], self._index)
+                            else:
+                                st.h2h_date_update_existing_op(self._data, self.h2hVMtabs, old_year, new_year, index_h2h_op_oy, index_h2h_op_ny[0], self._index, index, value)
+                                refresh.h2h_score(self.h2hVMtabs[old_year], index_h2h_op_oy[0], self._index)
+                                refresh.h2h_score(self.h2hVMtabs[new_year], index_h2h_op_ny[0], self._index)
+
+                    ### updating stats table
                     if self._data[index.row(), self._index.date][-4:] == value[-4:]:
                         st.stats_date_update(self._data, self._stats_data, self._stats_header, '', value[-4:], self._index, index)
                         refresh.stats_tab(self.statsVM[value[-4:]], self._stats_header)
                     else:
                         st.stats_date_update(self._data, self._stats_data, self._stats_header, self._data[index.row(), self._index.date][-4:], value[-4:], self._index, index)
                         refresh.stats_tab(self.statsVM[value[-4:]], self._stats_header)
-
                          
             except:
-                #if value != '' or (self._data[index.row(), index.column()] == '' and value == '') or (self._data[index.row(), index.column()] != ''):
                 value = self._data[index.row(), index.column()]
                 self._window.debugText.insertPlainText('Invalid datetime format. Please input date using the dd.mm.yyyy format \n')
-                #else:
-                #    st.stats_date_update(self._data, self._stats_data, self._stats_header, self._data[index.row(), self._index.date][-4:], value[-4:], self._index, index)
-                #    refresh.stats_tab(self.statsVM[value[-4:]], self._stats_header)
-
-                #self._window.debugText.insertPlainText('Invalid datetime format. Please input date using the dd.mm.yyyy format \n')
 
     ##############################################################################################################################################
     # ------------------------------------------------------ editing 'Opponent' cell -------------------------------------------------------------
@@ -123,8 +190,8 @@ class dataTableViewModel(QAbstractTableModel):
                     st.h2h_result_first(self._data, self.h2hVM._data, index_h2h_op[0], self._index, index, value)
                     self.h2hVM._data = tools.sort_h2h(self.h2hVM._data, self._index) # sort h2h table by name
                     index_h2h_op = np.where(self.h2hVM._data[:, self._index.h2h_op] == value) # recalculate because index changed in previous line
-                    refresh.h2h_score(self.h2hVM, self._h2h_data.shape[0]-1, self._index)
-                    refresh.h2h_opponent(self.h2hVM, self._h2h_data.shape[0]-1, self._index)
+                    #refresh.h2h_score(self.h2hVM, self._h2h_data.shape[0]-1, self._index)
+                    #refresh.h2h_opponent(self.h2hVM, self._h2h_data.shape[0]-1, self._index)
 
                     self.h2hVM._data = np.vstack((self.h2hVM._data, np.empty(shape=(1, self._h2h_data.shape[1]), dtype='U64')))
                     self.h2hVM.layoutChanged.emit()   

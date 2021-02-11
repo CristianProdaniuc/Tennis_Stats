@@ -139,6 +139,50 @@ class statistics(object):
             h2h_data[index_op, index.h2h_lost] = np.array( [int(h2h_data[index_op, index.h2h_lost]) -1], dtype='U64')[0]
             h2h_data[index_op, index.h2h_matches] = np.array( [int(h2h_data[index_op, index.h2h_matches]) -1], dtype='U64')[0]
 
+    def h2h_date_update_existing_op(data, h2h_data, old_year, new_year, index_h2h_op_old, index_h2h_op, index, index_data, value):
+        if old_year == '':
+            if data[index_data.row(), index.res] == 'W':
+                h2h_data[new_year]._data[index_h2h_op, index.h2h_won] = str(int(h2h_data[new_year]._data[index_h2h_op, index.h2h_won]) +1)
+                h2h_data[new_year]._data[index_h2h_op, index.h2h_matches] = str(int(h2h_data[new_year]._data[index_h2h_op, index.h2h_matches]) +1)
+            elif data[index_data.row(), index.res] == 'L':
+                h2h_data[new_year]._data[index_h2h_op, index.h2h_lost] = str(int(h2h_data[new_year]._data[index_h2h_op, index.h2h_lost]) +1)
+                h2h_data[new_year]._data[index_h2h_op, index.h2h_matches] = str(int(h2h_data[new_year]._data[index_h2h_op, index.h2h_matches]) +1)
+        elif new_year == '':
+            if data[index_data.row(), index.res] == 'W':
+                h2h_data[old_year]._data[index_h2h_op_old, index.h2h_won] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_won]) -1)
+                h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches]) -1)
+            elif data[index_data.row(), index.res] == 'L':
+                h2h_data[old_year]._data[index_h2h_op_old, index.h2h_lost] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_lost]) -1)
+                h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches]) -1)
+        else:
+            if data[index_data.row(), index.res] == 'W':
+                h2h_data[old_year]._data[index_h2h_op_old, index.h2h_won] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_won]) -1)
+                h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches]) -1)
+                h2h_data[new_year]._data[index_h2h_op, index.h2h_won] = str(int(h2h_data[new_year]._data[index_h2h_op, index.h2h_won]) +1)
+                h2h_data[new_year]._data[index_h2h_op, index.h2h_matches] = str(int(h2h_data[new_year]._data[index_h2h_op, index.h2h_matches]) +1)
+            elif data[index_data.row(), index.res] == 'L':
+                h2h_data[old_year]._data[index_h2h_op_old, index.h2h_lost] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_lost]) -1)
+                h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches]) -1)
+                h2h_data[new_year]._data[index_h2h_op, index.h2h_lost] = str(int(h2h_data[new_year]._data[index_h2h_op, index.h2h_lost]) +1)
+                h2h_data[new_year]._data[index_h2h_op, index.h2h_matches] = str(int(h2h_data[new_year]._data[index_h2h_op, index.h2h_matches]) +1)
+
+    def h2h_date_update_new_op(data, h2h_data, index_op, index, index_data, value):
+        if data[index_data.row(), index.res] == 'W':
+            h2h_data[-1, index.h2h_op] = data[index_data.row(), index.op]
+            h2h_data[-1, index.h2h_won] = 1
+            h2h_data[-1, index.h2h_lost] = 0
+            h2h_data[-1, index.h2h_matches] = 1
+        elif data[index_data.row(), index.res] == 'L':
+            h2h_data[-1, index.h2h_op] = data[index_data.row(), index.op]
+            h2h_data[-1, index.h2h_won] = 0
+            h2h_data[-1, index.h2h_lost] = 1
+            h2h_data[-1, index.h2h_matches] = 1
+        else:
+            h2h_data[-1, index.h2h_op] = data[index_data.row(), index.op]
+            h2h_data[-1, index.h2h_won] = 0
+            h2h_data[-1, index.h2h_lost] = 0
+            h2h_data[-1, index.h2h_matches] = 0
+
     ###########################################################################################################################################
     #------------------------------------------ Stats Table Functions ------------------------------------------------------------------------#
     ###########################################################################################################################################   

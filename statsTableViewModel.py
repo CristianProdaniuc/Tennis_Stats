@@ -1,7 +1,6 @@
 from PyQt5.QtCore import QAbstractTableModel, Qt
 
 class statsTableViewModel(QAbstractTableModel):
-    """description of class"""
 
     def __init__(self, data, header):
         super(statsTableViewModel, self).__init__()
