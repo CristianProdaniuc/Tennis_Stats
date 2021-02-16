@@ -121,10 +121,10 @@ class dataTableViewModel(QAbstractTableModel):
 
                             self.h2hVMtabs[new_year]._data = np.vstack((self.h2hVMtabs[new_year]._data, np.empty(shape=(1, self._h2h_data_tabs['All Time'].shape[1]), dtype='U64')))
                             self.h2hVMtabs[new_year].layoutChanged.emit() 
-                        else:
+                        elif self._data[index.row(), self._index.op] != '':
                             st.h2h_date_update_existing_op(self._data, self.h2hVMtabs, '', new_year, '', index_h2h_op_ny[0], self._index, index, value)
                             refresh.h2h_score(self.h2hVMtabs[new_year], index_h2h_op_ny[0], self._index)
-                    else:
+                    elif self._data[index.row(), self._index.op] != '':
                         if cnt_date == 0 and index_h2h_op_ny[0].size == 0:
                             st.h2h_date_update_new_op(self._data, self.h2hVMtabs[new_year]._data, index_h2h_op_ny[0], self._index, index, value)
                             self.h2hVMtabs[new_year]._data = tools.sort_h2h(self.h2hVMtabs[new_year]._data, self._index)
@@ -177,6 +177,7 @@ class dataTableViewModel(QAbstractTableModel):
     # ------------------------------------------------------ editing 'Opponent' cell -------------------------------------------------------------
     ##############################################################################################################################################
         elif index.column() == self._index.op: # when editing 'Opponent' cell
+            year = self._data[index.row(), self._index.date][-4:]
             if self._data[index.row(), index.column()] == value: # when cell value did not change
                 self._window.debugText.insertPlainText('Cell value remained the same.\n')
             elif (self._data[index.row(), index.column()] == None or self._data[index.row(), index.column()] == np.array([''])) and \
@@ -186,35 +187,71 @@ class dataTableViewModel(QAbstractTableModel):
 
                 index_h2h_op = np.where(self.h2hVM._data[:, self._index.h2h_op] == value) 
 
+                ### for old h2h
                 if index_h2h_op[0].size == 0:
                     st.h2h_result_first(self._data, self.h2hVM._data, index_h2h_op[0], self._index, index, value)
                     self.h2hVM._data = tools.sort_h2h(self.h2hVM._data, self._index) # sort h2h table by name
                     index_h2h_op = np.where(self.h2hVM._data[:, self._index.h2h_op] == value) # recalculate because index changed in previous line
-                    #refresh.h2h_score(self.h2hVM, self._h2h_data.shape[0]-1, self._index)
-                    #refresh.h2h_opponent(self.h2hVM, self._h2h_data.shape[0]-1, self._index)
 
                     self.h2hVM._data = np.vstack((self.h2hVM._data, np.empty(shape=(1, self._h2h_data.shape[1]), dtype='U64')))
                     self.h2hVM.layoutChanged.emit()   
-
                 else:
                     st.h2h_result_update(self._data, self.h2hVM._data, index_h2h_op[0], self._index, index)
                     refresh.h2h_score(self.h2hVM, index_h2h_op[0], self._index)
-               
+
+                ### for new tabular h2h
+                index_h2h_op = np.where(self.h2hVMtabs['All Time']._data[:, self._index.h2h_op] == value)
+
+                if index_h2h_op[0].size == 0:
+                    st.h2h_result_first(self._data, self.h2hVMtabs['All Time']._data, index_h2h_op[0], self._index, index, value)
+                    self.h2hVMtabs['All Time']._data = tools.sort_h2h(self.h2hVMtabs['All Time']._data, self._index) # sort h2h table by name
+                    index_h2h_op = np.where(self.h2hVMtabs['All Time']._data[:, self._index.h2h_op] == value)
+
+                    self.h2hVMtabs['All Time']._data = np.vstack((self.h2hVMtabs['All Time']._data, np.empty(shape=(1, self._h2h_data_tabs['All Time'].shape[1]), dtype='U64')))
+                    self.h2hVMtabs['All Time'].layoutChanged.emit()  
+
+                    if self._data[index.row(), self._index.date] != '' and self._data[index.row(), self._index.date] != None:
+                        st.h2h_result_first(self._data, self.h2hVMtabs[year]._data, index_h2h_op[0], self._index, index, value)
+                        self.h2hVMtabs[year]._data = tools.sort_h2h(self.h2hVMtabs[year]._data, self._index) # sort h2h table by name
+                        index_h2h_op = np.where(self.h2hVMtabs[year]._data[:, self._index.h2h_op] == value)
+
+                        self.h2hVMtabs[year]._data = np.vstack((self.h2hVMtabs[year]._data, np.empty(shape=(1, self._h2h_data_tabs['All Time'].shape[1]), dtype='U64')))
+                        self.h2hVMtabs[year].layoutChanged.emit()  
+
+                else:
+                    st.h2h_op_update(self._data, self.h2hVMtabs['All Time']._data, '', index_h2h_op[0], self._index, index)
+                    refresh.h2h_score(self.h2hVMtabs['All Time'], index_h2h_op[0], self._index)
+
+                    if self._data[index.row(), self._index.date] != '' and self._data[index.row(), self._index.date] != None:
+                        index_h2h_op_year = np.where(self.h2hVMtabs[year]._data[:, self._index.h2h_op] == value)
+                        if index_h2h_op_year[0].size == 0:
+                            st.h2h_result_first(self._data, self.h2hVMtabs[year]._data, index_h2h_op[0], self._index, index, value)
+                            self.h2hVMtabs[year]._data = tools.sort_h2h(self.h2hVMtabs[year]._data, self._index) # sort h2h table by name
+                            index_h2h_op = np.where(self.h2hVMtabs[year]._data[:, self._index.h2h_op] == value)
+
+                            self.h2hVMtabs[year]._data = np.vstack((self.h2hVMtabs[year]._data, np.empty(shape=(1, self._h2h_data_tabs['All Time'].shape[1]), dtype='U64')))
+                            self.h2hVMtabs[year].layoutChanged.emit()  
+                        else:
+                            st.h2h_op_update(self._data, self.h2hVMtabs[year]._data, '', index_h2h_op[0], self._index, index)
+                            refresh.h2h_score(self.h2hVMtabs[year], index_h2h_op[0], self._index)
+
             elif (self._data[index.row(), index.column()] != None or self._data[index.row(), index.column()] != np.array([''])) and \
                  (value != None and value != np.array([''])): # when non-empty cell contents are changed/edited
 
                 st.h2h_sets(self._data, self._index, index, self._window)
 
-                index_h2h_op = np.where(self.h2hVM._data[:, self._index.h2h_op] == self._data[index.row(), index.column()]) 
-                index_h2h_op_new = np.where(self.h2hVM._data[:, self._index.h2h_op] == value)
+                index_h2h_op = np.where(self.h2hVM._data[:, self._index.h2h_op] == value)
+                index_h2h_op_old = np.where(self.h2hVM._data[:, self._index.h2h_op] == self._data[index.row(), index.column()]) 
+                #index_h2h_op_new = np.where(self.h2hVM._data[:, self._index.h2h_op] == value)
                 
-                if index_h2h_op_new[0].size == 0:
-                    st.h2h_result_remove(self._data,  self.h2hVM._data, index_h2h_op[0], self._index, index)
+                ### for old h2h
+                if index_h2h_op[0].size == 0:
+                    st.h2h_result_remove(self._data,  self.h2hVM._data, index_h2h_op_old[0], self._index, index)
                     refresh.h2h_score(self.h2hVM, self._h2h_data.shape[0]-1, self._index)
 
-                    st.h2h_result_first(self._data, self.h2hVM._data, index_h2h_op_new[0], self._index, index, value)
+                    st.h2h_result_first(self._data, self.h2hVM._data, index_h2h_op[0], self._index, index, value)
                     self.h2hVM._data = tools.sort_h2h(self.h2hVM._data, self._index) # sort h2h table by name
-                    index_h2h_op = np.where(self.h2hVM._data[:, self._index.h2h_op] == self._data[index.row(), index.column()]) # recalculate because index changed in previous line
+                    index_h2h_op_old = np.where(self.h2hVM._data[:, self._index.h2h_op] == self._data[index.row(), index.column()]) # recalculate because index changed in previous line
                     refresh.h2h_score(self.h2hVM, self._h2h_data.shape[0]-1, self._index)
                     refresh.h2h_opponent(self.h2hVM, self._h2h_data.shape[0]-1, self._index)
 
@@ -222,21 +259,97 @@ class dataTableViewModel(QAbstractTableModel):
                     self.h2hVM.layoutChanged.emit() 
 
                 else:
-                    st.h2h_result_remove(self._data,  self.h2hVM._data, index_h2h_op[0], self._index, index)
+                    st.h2h_result_remove(self._data,  self.h2hVM._data, index_h2h_op_old[0], self._index, index)
+                    refresh.h2h_score(self.h2hVM, index_h2h_op_old[0], self._index)
+
+                    st.h2h_result_update(self._data, self.h2hVM._data, index_h2h_op[0], self._index, index)
                     refresh.h2h_score(self.h2hVM, index_h2h_op[0], self._index)
-
-                    st.h2h_result_update(self._data, self.h2hVM._data, index_h2h_op_new[0], self._index, index)
-                    refresh.h2h_score(self.h2hVM, index_h2h_op_new[0], self._index)
                     test=1
+                   
+                ### for new tabular h2h
+                index_h2h_op = np.where(self.h2hVMtabs['All Time']._data[:, self._index.h2h_op] == value)
+                index_h2h_op_old = np.where(self.h2hVMtabs['All Time']._data[:, self._index.h2h_op] == self._data[index.row(), index.column()]) 
 
-            #elif (self._data[index.row(), index.column()] != None or self._data[index.row(), index.column()] != '') and \
-            #     (value == None and value == ''): # when name in cell is deleted
-            else:
+                # All time tab
+                if index_h2h_op[0].size == 0 and int(self.h2hVMtabs['All Time']._data[index_h2h_op_old, self._index.h2h_matches]) < 2: # new new op and last old op 
+                    st.h2h_update_new_op(self._data, self.h2hVMtabs['All Time']._data, index_h2h_op, self._index, index, value)
+                    self.h2hVMtabs['All Time']._data = np.delete(self.h2hVMtabs['All Time']._data, index_h2h_op_old[0], 0)
+                    self.h2hVMtabs['All Time']._data = tools.sort_h2h(self.h2hVMtabs['All Time']._data, self._index)
+                    self.h2hVMtabs['All Time']._data = np.vstack((self.h2hVMtabs['All Time']._data, np.empty(shape=(1, self._h2h_data_tabs['All Time'].shape[1]), dtype='U64')))
+                    self.h2hVMtabs['All Time'].layoutChanged.emit() 
+
+                elif index_h2h_op[0].size == 0: # new new op
+                    st.h2h_update_new_op(self._data, self.h2hVMtabs['All Time']._data, index_h2h_op, self._index, index, value)
+                    st.h2h_op_update(self._data, self.h2hVMtabs['All Time']._data, index_h2h_op_old, '', self._index, index)
+                    self.h2hVMtabs['All Time']._data = tools.sort_h2h(self.h2hVMtabs['All Time']._data, self._index)
+                    self.h2hVMtabs['All Time']._data = np.vstack((self.h2hVMtabs['All Time']._data, np.empty(shape=(1, self._h2h_data_tabs['All Time'].shape[1]), dtype='U64')))
+                    self.h2hVMtabs['All Time'].layoutChanged.emit() 
+
+                elif int(self.h2hVMtabs['All Time']._data[index_h2h_op_old, self._index.h2h_matches]) < 2: # last old op
+                    st.h2h_op_update(self._data, self.h2hVMtabs['All Time']._data, '', index_h2h_op, self._index, index)
+                    self.h2hVMtabs['All Time']._data = np.delete(self.h2hVMtabs['All Time']._data, index_h2h_op_old[0], 0)
+                    self.h2hVMtabs['All Time'].layoutChanged.emit()
+
+                else:
+                    st.h2h_op_update(self._data, self.h2hVMtabs['All Time']._data, index_h2h_op_old, index_h2h_op, self._index, index)
+                    refresh.h2h_score(self.h2hVMtabs['All Time'], index_h2h_op_old[0], self._index)
+                    refresh.h2h_score(self.h2hVMtabs['All Time'], index_h2h_op[0], self._index)
+
+                # year tab
+                index_h2h_op = np.where(self.h2hVMtabs[year]._data[:, self._index.h2h_op] == value)
+                index_h2h_op_old = np.where(self.h2hVMtabs[year]._data[:, self._index.h2h_op] == self._data[index.row(), index.column()]) 
+
+                if self._data[index.row(), self._index.date] != '' and self._data[index.row(), self._index.date] != None:
+                    if index_h2h_op[0].size == 0 and int(self.h2hVMtabs[year]._data[index_h2h_op_old, self._index.h2h_matches]) < 2: # new new op and last old op 
+                        st.h2h_update_new_op(self._data, self.h2hVMtabs[year]._data, index_h2h_op, self._index, index, value)
+                        self.h2hVMtabs[year]._data = np.delete(self.h2hVMtabs[year]._data, index_h2h_op_old[0], 0)
+                        self.h2hVMtabs[year]._data = tools.sort_h2h(self.h2hVMtabs[year]._data, self._index)
+                        self.h2hVMtabs[year]._data = np.vstack((self.h2hVMtabs[year]._data, np.empty(shape=(1, self._h2h_data_tabs[year].shape[1]), dtype='U64')))
+                        self.h2hVMtabs[year].layoutChanged.emit() 
+
+                    elif index_h2h_op[0].size == 0: # new new op
+                        st.h2h_update_new_op(self._data, self.h2hVMtabs[year]._data, index_h2h_op, self._index, index, value)
+                        st.h2h_op_update(self._data, self.h2hVMtabs[year]._data, index_h2h_op_old, '', self._index, index)
+                        self.h2hVMtabs[year]._data = tools.sort_h2h(self.h2hVMtabs[year]._data, self._index)
+                        self.h2hVMtabs[year]._data = np.vstack((self.h2hVMtabs[year]._data, np.empty(shape=(1, self._h2h_data_tabs[year].shape[1]), dtype='U64')))
+                        self.h2hVMtabs[year].layoutChanged.emit() 
+
+                    elif int(self.h2hVMtabs[year]._data[index_h2h_op_old, self._index.h2h_matches]) < 2: # last old op
+                        st.h2h_op_update(self._data, self.h2hVMtabs[year]._data, '', index_h2h_op, self._index, index)
+                        self.h2hVMtabs[year]._data = np.delete(self.h2hVMtabs[year]._data, index_h2h_op_old[0], 0)
+                        self.h2hVMtabs[year].layoutChanged.emit()
+
+                    else:
+                        st.h2h_op_update(self._data, self.h2hVMtabs[year]._data, index_h2h_op_old, index_h2h_op, self._index, index)
+                        refresh.h2h_score(self.h2hVMtabs[year], index_h2h_op_old[0], self._index)
+                        refresh.h2h_score(self.h2hVMtabs[year], index_h2h_op[0], self._index)
+
+
+            else: # when name in cell is deleted 
+                ### for old h2h
                 st.h2h_sets(self._data, self._index, index, self._window)
-                index_h2h_op = np.where(self.h2hVM._data[:, self._index.h2h_op] == self._data[index.row(), index.column()])
+                index_h2h_op_old = np.where(self.h2hVM._data[:, self._index.h2h_op] == self._data[index.row(), index.column()])
 
-                st.h2h_result_remove(self._data,  self.h2hVM._data, index_h2h_op[0], self._index, index)
-                refresh.h2h_score(self.h2hVM, index_h2h_op[0], self._index)
+                st.h2h_result_remove(self._data,  self.h2hVM._data, index_h2h_op_old[0], self._index, index)
+                refresh.h2h_score(self.h2hVM, index_h2h_op_old[0], self._index)
+
+                ### for new tabular h2h
+                index_h2h_op_old = np.where(self.h2hVMtabs[year]._data[:, self._index.h2h_op] == self._data[index.row(), index.column()])
+
+                if int(self.h2hVMtabs['All Time']._data[index_h2h_op_old, self._index.h2h_matches]) < 2: # last old op
+                    self.h2hVMtabs['All Time']._data = np.delete(self.h2hVMtabs['All Time']._data, index_h2h_op_old[0], 0)
+                    self.h2hVMtabs['All Time'].layoutChanged.emit()
+                else:
+                    st.h2h_op_update(self._data, self.h2hVMtabs['All Time']._data, index_h2h_op_old, '', self._index, index)
+                    refresh.h2h_score(self.h2hVMtabs[year], index_h2h_op_old[0], self._index)
+
+                if self._data[index.row(), self._index.date] != '' and self._data[index.row(), self._index.date] != None:
+                    if int(self.h2hVMtabs[year]._data[index_h2h_op_old, self._index.h2h_matches]) < 2: # last old op
+                        self.h2hVMtabs[year]._data = np.delete(self.h2hVMtabs[year]._data, index_h2h_op_old[0], 0)
+                        self.h2hVMtabs[year].layoutChanged.emit()
+                    else:
+                        st.h2h_op_update(self._data, self.h2hVMtabs[year]._data, index_h2h_op_old, '', self._index, index)
+                        refresh.h2h_score(self.h2hVMtabs[year], index_h2h_op_old[0], self._index)
 
     ##############################################################################################################################################
     #--------------------------------------------------- editing 'Result' cell ---------------------------------------------------------------------

@@ -116,7 +116,7 @@ class statistics(object):
             h2h_data[-1, index.h2h_op] = str(value)
             h2h_data[-1, index.h2h_won] = 0
             h2h_data[-1, index.h2h_lost] = 0
-            h2h_data[-1, index.h2h_matches] = 0
+            h2h_data[-1, index.h2h_matches] = 1
             data[index_data.row(), 2] = 'NA'
 
     def h2h_result_update(data, h2h_data, index_op, index, index_data):
@@ -129,6 +129,7 @@ class statistics(object):
             h2h_data[index_op, index.h2h_matches] = np.array( [int(h2h_data[index_op, index.h2h_matches]) +1], dtype='U64')[0]
             data[index_data.row(), index.res] = 'L'
         else:
+            h2h_data[index_op, index.h2h_matches] = np.array( [int(h2h_data[index_op, index.h2h_matches]) +1], dtype='U64')[0]
             data[index_data.row(), 2] = 'NA'
 
     def h2h_result_remove(data, h2h_data, index_op, index, index_data):
@@ -147,12 +148,16 @@ class statistics(object):
             elif data[index_data.row(), index.res] == 'L':
                 h2h_data[new_year]._data[index_h2h_op, index.h2h_lost] = str(int(h2h_data[new_year]._data[index_h2h_op, index.h2h_lost]) +1)
                 h2h_data[new_year]._data[index_h2h_op, index.h2h_matches] = str(int(h2h_data[new_year]._data[index_h2h_op, index.h2h_matches]) +1)
+            elif data[index_data.row(), index.res] == 'NA':
+                h2h_data[new_year]._data[index_h2h_op, index.h2h_matches] = str(int(h2h_data[new_year]._data[index_h2h_op, index.h2h_matches]) +1)
         elif new_year == '':
             if data[index_data.row(), index.res] == 'W':
                 h2h_data[old_year]._data[index_h2h_op_old, index.h2h_won] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_won]) -1)
                 h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches]) -1)
             elif data[index_data.row(), index.res] == 'L':
                 h2h_data[old_year]._data[index_h2h_op_old, index.h2h_lost] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_lost]) -1)
+                h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches]) -1)
+            elif data[index_data.row(), index.res] == 'NA':
                 h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches]) -1)
         else:
             if data[index_data.row(), index.res] == 'W':
@@ -164,6 +169,9 @@ class statistics(object):
                 h2h_data[old_year]._data[index_h2h_op_old, index.h2h_lost] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_lost]) -1)
                 h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches]) -1)
                 h2h_data[new_year]._data[index_h2h_op, index.h2h_lost] = str(int(h2h_data[new_year]._data[index_h2h_op, index.h2h_lost]) +1)
+                h2h_data[new_year]._data[index_h2h_op, index.h2h_matches] = str(int(h2h_data[new_year]._data[index_h2h_op, index.h2h_matches]) +1)
+            elif data[index_data.row(), index.res] == 'NA':
+                h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches] = str(int(h2h_data[old_year]._data[index_h2h_op_old, index.h2h_matches]) -1)
                 h2h_data[new_year]._data[index_h2h_op, index.h2h_matches] = str(int(h2h_data[new_year]._data[index_h2h_op, index.h2h_matches]) +1)
 
     def h2h_date_update_new_op(data, h2h_data, index_op, index, index_data, value):
@@ -177,11 +185,73 @@ class statistics(object):
             h2h_data[-1, index.h2h_won] = 0
             h2h_data[-1, index.h2h_lost] = 1
             h2h_data[-1, index.h2h_matches] = 1
+        elif data[index_data.row(), index.res] == 'NA':
+            h2h_data[-1, index.h2h_op] = data[index_data.row(), index.op]
+            h2h_data[-1, index.h2h_won] = 0
+            h2h_data[-1, index.h2h_lost] = 0
+            h2h_data[-1, index.h2h_matches] = 1
         else:
             h2h_data[-1, index.h2h_op] = data[index_data.row(), index.op]
             h2h_data[-1, index.h2h_won] = 0
             h2h_data[-1, index.h2h_lost] = 0
             h2h_data[-1, index.h2h_matches] = 0
+
+    def h2h_update_new_op(data, h2h_data, index_op, index, index_data, value):
+        if data[index_data.row(), index.res] == 'W':
+            h2h_data[-1, index.h2h_op] = value
+            h2h_data[-1, index.h2h_won] = 1
+            h2h_data[-1, index.h2h_lost] = 0
+            h2h_data[-1, index.h2h_matches] = 1
+        elif data[index_data.row(), index.res] == 'L':
+            h2h_data[-1, index.h2h_op] = value
+            h2h_data[-1, index.h2h_won] = 0
+            h2h_data[-1, index.h2h_lost] = 1
+            h2h_data[-1, index.h2h_matches] = 1
+        elif data[index_data.row(), index.res] == 'NA':
+            h2h_data[-1, index.h2h_op] = value
+            h2h_data[-1, index.h2h_won] = 0
+            h2h_data[-1, index.h2h_lost] = 0
+            h2h_data[-1, index.h2h_matches] = 1
+        else:
+            h2h_data[-1, index.h2h_op] = value
+            h2h_data[-1, index.h2h_won] = 0
+            h2h_data[-1, index.h2h_lost] = 0
+            h2h_data[-1, index.h2h_matches] = 0
+
+    def h2h_op_update(data, h2h_data, index_op_old, index_op_new, index, index_data):
+        if index_op_old == '':
+            if data[index_data.row(), index.res] == 'W':
+                h2h_data[index_op_new, index.h2h_won] = str(int(h2h_data[index_op_new, index.h2h_won]) +1)
+                h2h_data[index_op_new, index.h2h_matches] = str(int(h2h_data[index_op_new, index.h2h_matches]) +1)
+            elif data[index_data.row(), index.res] == 'L':
+                h2h_data[index_op_new, index.h2h_lost] = str(int(h2h_data[index_op_new, index.h2h_lost]) +1)
+                h2h_data[index_op_new, index.h2h_matches] = str(int(h2h_data[index_op_new, index.h2h_matches]) +1)
+            elif data[index_data.row(), index.res] == 'NA':
+                h2h_data[index_op_new, index.h2h_matches] = str(int(h2h_data[index_op_new, index.h2h_matches]) +1)
+        elif index_op_new == '':
+            if data[index_data.row(), index.res] == 'W':
+                h2h_data[index_op_old, index.h2h_won] = str(int(h2h_data[index_op_old, index.h2h_won]) -1)
+                h2h_data[index_op_old, index.h2h_matches] = str(int(h2h_data[index_op_old, index.h2h_matches]) -1)
+            elif data[index_data.row(), index.res] == 'L':
+                h2h_data[index_op_old, index.h2h_lost] = str(int(h2h_data[index_op_old, index.h2h_lost]) -1)
+                h2h_data[index_op_old, index.h2h_matches] = str(int(h2h_data[index_op_old, index.h2h_matches]) -1)
+            elif data[index_data.row(), index.res] == 'NA':
+                h2h_data[index_op_old, index.h2h_matches] = str(int(h2h_data[index_op_old, index.h2h_matches]) -1)
+        else:
+            if data[index_data.row(), index.res] == 'W':
+                h2h_data[index_op_old, index.h2h_won] = str(int(h2h_data[index_op_old, index.h2h_won]) -1)
+                h2h_data[index_op_old, index.h2h_matches] = str(int(h2h_data[index_op_old, index.h2h_matches]) -1)
+                h2h_data[index_op_new, index.h2h_won] = str(int(h2h_data[index_op_new, index.h2h_won]) +1)
+                h2h_data[index_op_new, index.h2h_matches] = str(int(h2h_data[index_op_new, index.h2h_matches]) +1)
+            elif data[index_data.row(), index.res] == 'L':
+                h2h_data[index_op_old, index.h2h_lost] = str(int(h2h_data[index_op_old, index.h2h_lost]) -1)
+                h2h_data[index_op_old, index.h2h_matches] = str(int(h2h_data[index_op_old, index.h2h_matches]) -1)
+                h2h_data[index_op_new, index.h2h_lost] = str(int(h2h_data[index_op_new, index.h2h_lost]) +1)
+                h2h_data[index_op_new, index.h2h_matches] = str(int(h2h_data[index_op_new, index.h2h_matches]) +1)
+            elif data[index_data.row(), index.res] == 'NA':
+                h2h_data[index_op_old, index.h2h_matches] = str(int(h2h_data[index_op_old, index.h2h_matches]) -1)
+                h2h_data[index_op_new, index.h2h_matches] = str(int(h2h_data[index_op_new, index.h2h_matches]) +1)
+
 
     ###########################################################################################################################################
     #------------------------------------------ Stats Table Functions ------------------------------------------------------------------------#
