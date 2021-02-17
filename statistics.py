@@ -252,6 +252,32 @@ class statistics(object):
                 h2h_data[index_op_old, index.h2h_matches] = str(int(h2h_data[index_op_old, index.h2h_matches]) -1)
                 h2h_data[index_op_new, index.h2h_matches] = str(int(h2h_data[index_op_new, index.h2h_matches]) +1)
 
+    def h2h_data_res_update(data, index_data, index):
+        if statistics.sets_won_new > statistics.sets_lost_new and statistics.sets_won_new > 1:
+            res_new = 'W'
+        elif statistics.sets_won_new < statistics.sets_lost_new and statistics.sets_lost_new > 1:
+            res_new = 'L'
+        else:
+            res_new = 'NA'
+
+        return res_new
+
+    def h2h_score_update(data, h2h_data, res_old, res_new, index, index_data, index_op):
+        if res_old == 'L' and res_new == 'NA':
+            h2h_data[index_op, index.h2h_lost] = str(int(h2h_data[index_op, index.h2h_lost]) -1)
+        elif res_old == 'L' and res_new == 'W':
+            h2h_data[index_op, index.h2h_lost] = str(int(h2h_data[index_op, index.h2h_lost]) -1)
+            h2h_data[index_op, index.h2h_won] = str(int(h2h_data[index_op, index.h2h_won]) +1)
+        elif res_old == 'NA' and res_new == 'L':
+            h2h_data[index_op, index.h2h_lost] = str(int(h2h_data[index_op, index.h2h_lost]) +1)
+        elif res_old == 'NA' and res_new == 'W':
+            h2h_data[index_op, index.h2h_won] = str(int(h2h_data[index_op, index.h2h_won]) +1)
+        elif res_old == 'W' and res_new == 'L':
+            h2h_data[index_op, index.h2h_won] = str(int(h2h_data[index_op, index.h2h_won]) -1)
+            h2h_data[index_op, index.h2h_lost] = str(int(h2h_data[index_op, index.h2h_lost]) +1)
+        elif res_old == 'W' and res_new == 'NA':
+            h2h_data[index_op, index.h2h_won] = str(int(h2h_data[index_op, index.h2h_won]) -1)
+
 
     ###########################################################################################################################################
     #------------------------------------------ Stats Table Functions ------------------------------------------------------------------------#

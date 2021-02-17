@@ -117,6 +117,7 @@ class main(QMainWindow):
         indexes.h2h_columns(self.h2h_header)
         indexes.stats_rows(self.stats_header)
 
+        self.data[-1, indexes.res] = 'NA'
         self.dtVM = dataTableViewModel(self.data, self.header, self.h2h_data, self.h2h_data_tabs, self.h2h_header, self.h2h_years, self.stats_data, self.stats_header, self.stats_years, self.window, indexes)
         self.window.dataTableView.setModel(self.dtVM)        
 
@@ -253,6 +254,7 @@ class main(QMainWindow):
     def addNewResult(self):
         try: 
             self.dtVM._data = np.vstack((self.dtVM._data, np.empty(shape=(1, indexes.obs +1), dtype='U64')))
+            self.dtVM._data[-1, indexes.res] = 'NA'
             self.dtVM.layoutChanged.emit()
         except: 
             self.window.debugText.insertPlainText('You must create a new table or open an already existing one first!\n')

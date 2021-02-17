@@ -368,6 +368,7 @@ class dataTableViewModel(QAbstractTableModel):
             if st.valid_input == False:
                 value = ''
 
+            temp = self._data[index.row(), self._index.res]
             ### h2h table
             index_h2h_op = np.where(self.h2hVM._data[:, self._index.h2h_op] == self._data[index.row(), self._index.op])
             if index_h2h_op[0].size == 0:
@@ -386,6 +387,27 @@ class dataTableViewModel(QAbstractTableModel):
                         st.h2h_compare_results(self._data, self.h2hVM._data, index_h2h_op[0], self._index, index, self._window)
 
                 refresh.h2h_score(self.h2hVM, index_h2h_op[0], self._index)
+
+            ### h2h tabs table
+            if st.sets_won != st.sets_won_new or st.sets_lost != st.sets_lost_new: # if sets won or lost changed
+                res_old = temp
+                res_new = st.h2h_data_res_update(self._data, index, self._index) 
+
+                if res_new != res_old:
+                    index_h2h_op = np.where(self.h2hVMtabs['All Time']._data[:, self._index.h2h_op] == self._data[index.row(), self._index.op]) 
+                    if self._data[index.row(), self._index.date] == '' and self._data[index.row(), self._index.op] != '':
+                        index_h2h_op = np.where(self.h2hVMtabs['All Time']._data[:, self._index.h2h_op] == self._data[index.row(), self._index.op])
+                        st.h2h_score_update(self._data, self.h2hVMtabs['All Time']._data, res_old, res_new, self._index, index, index_h2h_op)
+                        refresh.h2h_score(self.h2hVMtabs['All Time'], index_h2h_op[0], self._index)
+                    elif self._data[index.row(), self._index.date] != '' and self._data[index.row(), self._index.op] != '':
+                        year = self._data[index.row(), self._index.date][-4:]
+                        index_h2h_op = np.where(self.h2hVMtabs['All Time']._data[:, self._index.h2h_op] == self._data[index.row(), self._index.op])
+                        index_h2h_op_year = np.where(self.h2hVMtabs[year]._data[:, self._index.h2h_op] == self._data[index.row(), self._index.op])
+
+                        st.h2h_score_update(self._data, self.h2hVMtabs['All Time']._data, res_old, res_new, self._index, index, index_h2h_op)
+                        st.h2h_score_update(self._data, self.h2hVMtabs[year]._data, res_old, res_new, self._index, index, index_h2h_op_year)
+                        refresh.h2h_score(self.h2hVMtabs['All Time'], index_h2h_op[0], self._index)
+                        refresh.h2h_score(self.h2hVMtabs[year], index_h2h_op_year[0], self._index)
 
             ### stats table
             if st.sets_won != st.sets_won_new or st.sets_lost != st.sets_lost_new: # if sets won or lost changed
